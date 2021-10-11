@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JU.Automation.Hue.ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--hue-ip 192.168.0.130 --hue-appkey sgXGBNa5-iEwBwUClaP9zwlrpIeHX-74jtzvPRtR"
+    }
+  }
+}
