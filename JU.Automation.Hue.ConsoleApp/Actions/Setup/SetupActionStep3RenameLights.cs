@@ -6,18 +6,18 @@ using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public class SetupActionStep2RenameLights : SetupActionStepBase<SetupActionStep2RenameLights>
+    public class SetupActionStep3RenameLights : SetupActionStepBase<SetupActionStep3RenameLights>
     {
         private readonly IHueClient _hueClient;
 
-        public SetupActionStep2RenameLights(
+        public SetupActionStep3RenameLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep2RenameLights> logger): base(logger)
+            ILogger<SetupActionStep3RenameLights> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
-        public override int Step => 2;
+        public override int Step => 3;
 
         public override async Task ExecuteStep()
         {

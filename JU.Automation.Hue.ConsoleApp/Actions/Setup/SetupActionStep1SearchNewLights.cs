@@ -7,18 +7,18 @@ using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public class SetupActionStep1SearchNewLights : SetupActionStepBase<SetupActionStep1SearchNewLights>
+    public class SetupActionStep2SearchNewLights : SetupActionStepBase<SetupActionStep2SearchNewLights>
     {
         private readonly IHueClient _hueClient;
 
-        public SetupActionStep1SearchNewLights(
+        public SetupActionStep2SearchNewLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep1SearchNewLights> logger): base(logger)
+            ILogger<SetupActionStep2SearchNewLights> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
-        public override int Step => 1;
+        public override int Step => 2;
 
         public override async Task ExecuteStep()
         {

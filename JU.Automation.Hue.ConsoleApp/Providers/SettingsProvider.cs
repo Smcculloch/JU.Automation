@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 
 namespace JU.Automation.Hue.ConsoleApp.Providers
 {
@@ -8,6 +9,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         string AppKey { get; }
         bool EnableDebug { get; }
         string Wakeup1SensorUniqueId { get; }
+        void SetAppKey(string appKey);
     }
 
     public class SettingsProvider : ISettingsProvider
@@ -17,6 +19,8 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         private const string EnableDebugCommandLineArg = "enable-debug";
         private const string Wakeup1SensorUniqueIdKey = "Client:Wakeup1SensorUniqueId";
 
+        private string _appKey;
+
         private readonly IConfiguration _configuration;
 
         public SettingsProvider(IConfiguration configuration)
@@ -25,8 +29,29 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         }
 
         public string LocalHueClientIp => _configuration[HueIpCommandLineArg];
-        public string AppKey => _configuration[HueAppKeyCommandLineArg] ?? string.Empty;
+
+        public string AppKey
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_appKey))
+                {
+                    _appKey = _configuration[HueAppKeyCommandLineArg] ?? string.Empty;
+                }
+
+                return _appKey;
+            }
+        }
+
         public bool EnableDebug => bool.Parse(_configuration[EnableDebugCommandLineArg] ?? bool.FalseString);
         public string Wakeup1SensorUniqueId => _configuration[Wakeup1SensorUniqueIdKey];
+
+        public void SetAppKey(string appKey)
+        {
+            if (!string.IsNullOrEmpty(_appKey))
+                throw new ArgumentException("AppKey already set!");
+
+            _appKey = appKey;
+        }
     }
 }

@@ -60,20 +60,25 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
                 {
                     RecurringDay = RecurringDay.RecurringWeekdays,
                     TimerTime = wakeUpTime
-                }
+                },
+                Status = ScheduleStatus.Disabled
             };
 
             var wakeup1TriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeup1TriggerSchedule);
 
+            wakeup1TriggerSchedule.AutoDelete = false;
+
+            await _hueClient.UpdateScheduleAsync(wakeup1TriggerScheduleId, wakeup1TriggerSchedule);
+
             Console.WriteLine($"Schedule ({wakeup1TriggerSchedule.Name}) with id {wakeup1TriggerScheduleId} created");
 
-
+            /***************************************************************************************************************/
 
             var wakeup1EndSceneId = await GetSceneId(Constants.Scenes.Wakeup1End);
 
-            var wakeup1RollingSchedule = new Schedule
+            var wakeup1EndSceneSchedule = new Schedule
             {
-                Name = Constants.Schedules.Wakeup1Rolling,
+                Name = Constants.Schedules.Wakeup1EndScene,
                 Command = new InternalBridgeCommand
                 {
                     Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
@@ -87,12 +92,17 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
                 {
                     TimerTime = TimeSpan.FromMinutes(1)
                 },
+                AutoDelete = false,
                 Status = ScheduleStatus.Disabled
             };
 
-            var wakeup1RollingScheduleId = await _hueClient.CreateScheduleAsync(wakeup1RollingSchedule);
+            var wakeup1EndSceneScheduleId = await _hueClient.CreateScheduleAsync(wakeup1EndSceneSchedule);
 
-            Console.WriteLine($"Schedule ({wakeup1RollingSchedule.Name}) with id {wakeup1RollingScheduleId} created");
+            wakeup1EndSceneSchedule.AutoDelete = false;
+
+            await _hueClient.UpdateScheduleAsync(wakeup1EndSceneScheduleId, wakeup1EndSceneSchedule);
+
+            Console.WriteLine($"Schedule ({wakeup1EndSceneSchedule.Name}) with id {wakeup1EndSceneScheduleId} created");
         }
 
         private async Task<string> GetSensorId(string sensorUniqueId)

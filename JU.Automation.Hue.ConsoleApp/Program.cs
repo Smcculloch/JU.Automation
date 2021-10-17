@@ -42,9 +42,10 @@ namespace JU.Automation.Hue.ConsoleApp
                        services.AddSingleton<IConfiguration>(configuration);
                        services.AddTransient<ISettingsProvider, SettingsProvider>();
 
-                       services.AddTransient<ISetupAction, SetupActionStep1SearchNewLights>();
-                       services.AddTransient<ISetupAction, SetupActionStep2RenameLights>();
-                       services.AddTransient<ISetupAction, SetupActionStep3GroupLights>();
+                       services.AddTransient<ISetupAction, SetupActionStep1NewDeveloper>();
+                       services.AddTransient<ISetupAction, SetupActionStep2SearchNewLights>();
+                       services.AddTransient<ISetupAction, SetupActionStep3RenameLights>();
+                       services.AddTransient<ISetupAction, SetupActionStep4GroupLights>();
 
                        services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep1CreateSensors>();
                        services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep2CreateScenes>();

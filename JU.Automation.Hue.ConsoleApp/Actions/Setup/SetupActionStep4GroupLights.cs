@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -9,18 +10,18 @@ using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public class SetupActionStep3GroupLights : SetupActionStepBase<SetupActionStep3GroupLights>
+    public class SetupActionStep4GroupLights : SetupActionStepBase<SetupActionStep4GroupLights>
     {
         private readonly IHueClient _hueClient;
 
-        public SetupActionStep3GroupLights(
+        public SetupActionStep4GroupLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep3GroupLights> logger): base(logger)
+            ILogger<SetupActionStep4GroupLights> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
-        public override int Step => 3;
+        public override int Step => 4;
 
         public override async Task ExecuteStep()
         {
@@ -29,7 +30,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
             Console.WriteLine("Setup Living Room");
             Console.WriteLine("Select lights:");
             var groupLights = await SelectGroupLights(newLights);
-            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), "Living Room", RoomClass.LivingRoom);
+            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.LivingRoom, RoomClass.LivingRoom);
             Console.WriteLine();
 
             newLights = newLights.Except(groupLights);
@@ -37,7 +38,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
             Console.WriteLine("Setup Bedroom");
             Console.WriteLine("Select lights:");
             groupLights = await SelectGroupLights(newLights);
-            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), "Bedroom", RoomClass.Bedroom);
+            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.Bedroom, RoomClass.Bedroom);
             Console.WriteLine();
         }
 
