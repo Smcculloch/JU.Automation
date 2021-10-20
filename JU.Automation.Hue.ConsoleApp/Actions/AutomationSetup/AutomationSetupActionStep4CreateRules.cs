@@ -39,7 +39,6 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
             var wakeup1Rule = new Rule
             {
                 Name = Constants.Rules.Wakeup1Rule,
-
                 Conditions = new List<RuleCondition>
                 {
                     new()

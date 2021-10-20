@@ -61,7 +61,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
                     RecurringDay = RecurringDay.RecurringWeekdays,
                     TimerTime = wakeUpTime
                 },
-                Status = ScheduleStatus.Disabled
+                Status = ScheduleStatus.Enabled
             };
 
             var wakeup1TriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeup1TriggerSchedule);
