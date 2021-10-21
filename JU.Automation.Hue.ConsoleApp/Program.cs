@@ -33,6 +33,9 @@ namespace JU.Automation.Hue.ConsoleApp
                    })
                    .ConfigureServices(services =>
                    {
+                       services.AddHostedService<ScopedBackgroundService>();
+                       services.AddScoped<HueSetupApplication>();
+
                        var configuration = new ConfigurationBuilder()
                                            .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
                                            .AddJsonFile("appsettings.json", false)
@@ -41,6 +44,8 @@ namespace JU.Automation.Hue.ConsoleApp
 
                        services.AddSingleton<IConfiguration>(configuration);
                        services.AddTransient<ISettingsProvider, SettingsProvider>();
+
+                       services.AddHttpClient<IHueClient, HueClient>();
 
                        services.AddTransient<ISetupAction, SetupActionStep1NewDeveloper>();
                        services.AddTransient<ISetupAction, SetupActionStep2SearchNewLights>();
@@ -88,9 +93,6 @@ namespace JU.Automation.Hue.ConsoleApp
                                resetActionSteps,
                                automationResetActionSteps);
                        });
-
-                       services.AddHttpClient<IHueClient, HueClient>();
-                       services.AddHostedService<HueSetupApplication>();
                    });
     }
 }

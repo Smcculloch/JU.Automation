@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace JU.Automation.Hue.ConsoleApp
 {
-    public class HueSetupApplication: BackgroundService
+    public class HueSetupApplication//: BackgroundService
     {
         private readonly IHueConfigService _hueConfigService;
         private readonly ISettingsProvider _settingsProvider;
@@ -20,7 +20,8 @@ namespace JU.Automation.Hue.ConsoleApp
             _settingsProvider = settingsProvider;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task DoWorkAsync(CancellationToken stoppingToken)
         {
             var menuAction = RenderAndGetMenuSelection();
 
