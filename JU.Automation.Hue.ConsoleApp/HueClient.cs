@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Q42.HueApi;
@@ -19,12 +20,30 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task<string> NewDeveloper(string appName, string deviceName)
         {
-            var result = await RegisterAsync(appName, deviceName);
+            string appKey = null;
 
-            if (!IsInitialized && !string.IsNullOrEmpty(result))
-                Initialize(result);
+            while (string.IsNullOrEmpty(appKey))
+            {
+                try
+                {
+                    appKey = await RegisterAsync(appName, deviceName);
+                }
+                catch (LinkButtonNotPressedException)
+                {
+                    Console.WriteLine("Press link button to generate app key! Press any key to continue ...");
+                    Console.ReadKey();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error {e.Message}");
+                    throw;
+                }
+            }
 
-            return result;
+            if (!string.IsNullOrEmpty(appKey))
+                Initialize(appKey);
+
+            return appKey;
         }
     }
 }

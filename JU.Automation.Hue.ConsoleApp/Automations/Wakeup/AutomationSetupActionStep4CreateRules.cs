@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
     public class AutomationSetupActionStep4CreateRules : AutomationSetupActionStepBase<AutomationSetupActionStep4CreateRules>
     {
@@ -29,7 +28,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
 
         public override int Step => 4;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var bedroomGroupId = await GetGroupId(Constants.Groups.Bedroom);
             var wakeup1SensorId = await GetSensorId(_settingsProvider.Wakeup1SensorUniqueId);
@@ -80,6 +79,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
             var wakeup1RuleId = await _hueClient.CreateRule(wakeup1Rule);
 
             Console.WriteLine($"Rule with id {wakeup1RuleId} created");
+
+            return true;
         }
 
         private async Task<string> GetGroupId(string groupName)

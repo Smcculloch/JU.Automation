@@ -1,18 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
-using JU.Automation.Hue.ConsoleApp.Actions;
-using JU.Automation.Hue.ConsoleApp.Actions.AutomationReset;
-using JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup;
-using JU.Automation.Hue.ConsoleApp.Actions.Reset;
 using JU.Automation.Hue.ConsoleApp.Actions.Setup;
+using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
 using JU.Automation.Hue.ConsoleApp.Providers;
+using JU.Automation.Hue.ConsoleApp.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp
@@ -46,53 +44,22 @@ namespace JU.Automation.Hue.ConsoleApp
                        services.AddTransient<ISettingsProvider, SettingsProvider>();
 
                        services.AddHttpClient<IHueClient, HueClient>();
+                       services.AddTransient<IBridgeLocator, HttpBridgeLocator>();
 
-                       services.AddTransient<ISetupAction, SetupActionStep1NewDeveloper>();
-                       services.AddTransient<ISetupAction, SetupActionStep2SearchNewLights>();
-                       services.AddTransient<ISetupAction, SetupActionStep3RenameLights>();
-                       services.AddTransient<ISetupAction, SetupActionStep4GroupLights>();
+                       services.AddTransient<ISetupAction, SetupActionStep1RenameLights>();
+                       services.AddTransient<ISetupAction, SetupActionStep2GroupLights>();
 
-                       services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep1CreateSensors>();
-                       services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep2CreateScenes>();
-                       services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep3CreateSchedules>();
-                       services.AddTransient<IAutomationSetupAction, AutomationSetupActionStep4CreateRules>();
+                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep1CreateSensors>();
+                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep2CreateScenes>();
+                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep3CreateSchedules>();
+                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep4CreateRules>();
 
-                       services.AddTransient<IAutomationResetAction, AutomationResetActionStep96DeleteRules>();
-                       services.AddTransient<IAutomationResetAction, AutomationResetActionStep97DeleteSchedules>();
-                       services.AddTransient<IAutomationResetAction, AutomationResetActionStep98DeleteScenes>();
-                       services.AddTransient<IAutomationResetAction, AutomationResetActionStep99DeleteSensors>();
+                       services.AddTransient<IAutomationActionService, AutomationActionService>();
+                       services.AddTransient<IGenericActionService, GenericActionService>();
+                       services.AddTransient<ISetupActionService, SetupActionService>();
+                       services.AddTransient<IResetActionService, ResetActionService>();
 
-                       services.AddTransient<IResetAction, ResetActionStep98DeleteGroups>();
-                       services.AddTransient<IResetAction, ResetActionStep99DeleteLights>();
-
-                       services.AddScoped<IHueConfigService, HueConfigService>(x =>
-                       {
-                           var setupActionSteps = x.GetServices<ISetupAction>()
-                                                   .Cast<IStep>()
-                                                   .OrderBy(actionStep => actionStep.Step)
-                                                   .Cast<ISetupAction>();
-
-                           var automationSetupActionSteps = x.GetServices<IAutomationSetupAction>()
-                                                             .Cast<IStep>()
-                                                             .OrderBy(actionStep => actionStep.Step)
-                                                             .Cast<IAutomationSetupAction>();
-
-                           var resetActionSteps = x.GetServices<IResetAction>()
-                                                   .Cast<IStep>()
-                                                   .OrderBy(actionStep => actionStep.Step)
-                                                   .Cast<IResetAction>();
-
-                           var automationResetActionSteps = x.GetServices<IAutomationResetAction>()
-                                                             .Cast<IStep>()
-                                                             .OrderBy(actionStep => actionStep.Step)
-                                                             .Cast<IAutomationResetAction>();
-
-                           return new HueConfigService(
-                               setupActionSteps,
-                               automationSetupActionSteps,
-                               resetActionSteps,
-                               automationResetActionSteps);
-                       });
+                       services.AddScoped<IHueSetupCoordinator, HueSetupCoordinator>();
                    });
     }
 }

@@ -10,20 +10,20 @@ using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public class SetupActionStep4GroupLights : SetupActionStepBase<SetupActionStep4GroupLights>
+    public class SetupActionStep2GroupLights : SetupActionStepBase<SetupActionStep2GroupLights>
     {
         private readonly IHueClient _hueClient;
 
-        public SetupActionStep4GroupLights(
+        public SetupActionStep2GroupLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep4GroupLights> logger): base(logger)
+            ILogger<SetupActionStep2GroupLights> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
-        public override int Step => 4;
+        public override int Step => 2;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var newLights = (await _hueClient.GetNewLightsAsync()).AsEnumerable();
 
@@ -40,6 +40,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
             groupLights = await SelectGroupLights(newLights);
             await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.Bedroom, RoomClass.Bedroom);
             Console.WriteLine();
+
+            return true;
         }
 
         private async Task<IEnumerable<Light>> SelectGroupLights(IEnumerable<Light> newLights)

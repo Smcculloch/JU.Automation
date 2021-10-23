@@ -6,7 +6,7 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Sensors.CLIP;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
     public class AutomationSetupActionStep1CreateSensors : AutomationSetupActionStepBase<AutomationSetupActionStep1CreateSensors>
     {
@@ -24,7 +24,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
 
         public override int Step => 1;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var wakeup1Sensor = new Sensor
             {
@@ -44,6 +44,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
             var sensorId = await _hueClient.CreateSensorAsync(wakeup1Sensor);
 
             Console.WriteLine($"Sensor ({wakeup1Sensor.Name}) with id {sensorId} created");
+
+            return true;
         }
     }
 }

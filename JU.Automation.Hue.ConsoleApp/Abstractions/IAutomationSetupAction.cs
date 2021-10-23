@@ -4,6 +4,8 @@ namespace JU.Automation.Hue.ConsoleApp.Abstractions
 {
     public interface IAutomationSetupAction
     {
-        Task Execute();
+        Task<bool> Execute();
     }
+
+    public interface IWakeupAutomationSetupAction : IAutomationSetupAction  { }
 }

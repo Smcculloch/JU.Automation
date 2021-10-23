@@ -6,20 +6,20 @@ using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public class SetupActionStep3RenameLights : SetupActionStepBase<SetupActionStep3RenameLights>
+    public class SetupActionStep1RenameLights : SetupActionStepBase<SetupActionStep1RenameLights>
     {
         private readonly IHueClient _hueClient;
 
-        public SetupActionStep3RenameLights(
+        public SetupActionStep1RenameLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep3RenameLights> logger): base(logger)
+            ILogger<SetupActionStep1RenameLights> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
-        public override int Step => 3;
+        public override int Step => 1;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var newLights = await _hueClient.GetNewLightsAsync();
 
@@ -35,6 +35,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
             }
 
             Console.WriteLine();
+
+            return true;
         }
     }
 }

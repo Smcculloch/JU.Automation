@@ -9,7 +9,7 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Groups;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
     public class AutomationSetupActionStep2CreateScenes : AutomationSetupActionStepBase<AutomationSetupActionStep2CreateScenes>
     {
@@ -25,7 +25,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
 
         public override int Step => 2;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var groupBedroom = await GetGroup(Constants.Groups.Bedroom);
 
@@ -94,6 +94,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
             }
 
             Console.WriteLine($"Scene ({wakeup1EndScene.Name}) with id {wakeup1EndSceneId} created");
+
+            return true;
         }
 
         private async Task<Group> GetGroup(string groupName)

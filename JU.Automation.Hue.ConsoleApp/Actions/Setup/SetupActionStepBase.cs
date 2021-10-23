@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 {
-    public abstract class SetupActionStepBase<T>: ActionStepBase, ISetupAction, IStep
+    public abstract class SetupActionStepBase<T>: ISetupAction, IStep
     {
         private readonly ILogger<T> _logger;
 
@@ -15,13 +15,15 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 
         public abstract int Step { get; }
 
-        public abstract Task ExecuteStep();
+        public abstract Task<bool> ExecuteStep();
 
-        public async Task Execute()
+        public async Task<bool> Execute()
         {
-            await ExecuteStep();
+            var success = await ExecuteStep();
 
             _logger.LogInformation($"Setup {GetType().Name} (step {Step}) completed");
+
+            return success;
         }
     }
 }

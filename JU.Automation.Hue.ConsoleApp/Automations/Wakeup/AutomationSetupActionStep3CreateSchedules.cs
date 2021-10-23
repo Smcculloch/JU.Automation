@@ -10,7 +10,7 @@ using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
     public class AutomationSetupActionStep3CreateSchedules : AutomationSetupActionStepBase<AutomationSetupActionStep3CreateSchedules>
     {
@@ -28,7 +28,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
 
         public override int Step => 3;
 
-        public override async Task ExecuteStep()
+        public override async Task<bool> ExecuteStep()
         {
             var wakeUpTime = DateTime.Now.AddMinutes(10).TimeOfDay;
 
@@ -103,6 +103,8 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.AutomationSetup
             await _hueClient.UpdateScheduleAsync(wakeup1EndSceneScheduleId, wakeup1EndSceneSchedule);
 
             Console.WriteLine($"Schedule ({wakeup1EndSceneSchedule.Name}) with id {wakeup1EndSceneScheduleId} created");
+
+            return true;
         }
 
         private async Task<string> GetSensorId(string sensorUniqueId)
