@@ -44,6 +44,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor);
             model.Schedules.Wakeup = await CreateWakeupSchedule(model.Scenes.Wakeup);
+            model.Schedules.TurnOff = await CreateTurnOffSchedule(model.Scenes.TurnOff);
 
             return model;
         }
@@ -124,6 +125,39 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             Console.WriteLine($"Schedule ({wakeup1WakeupSchedule.Name}) with id {wakeup1WakeupScheduleId} created");
 
             return await _hueClient.GetScheduleAsync(wakeup1WakeupScheduleId);
+        }
+
+        private async Task<Schedule> CreateTurnOffSchedule(Scene turnOffScene)
+        {
+            var wakeup1TurnOffSchedule = new Schedule
+            {
+                Name = Constants.Schedules.Wakeup1TurnOff,
+                Command = new InternalBridgeCommand
+                {
+                    Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
+                    Body = new SceneCommand
+                    {
+                        Scene = turnOffScene.Id
+                    },
+                    Method = HttpMethod.Put
+                },
+                LocalTime = new HueDateTime
+                {
+                    TimerTime = TimeSpan.FromMinutes(1)
+                },
+                AutoDelete = false,
+                Status = ScheduleStatus.Disabled
+            };
+
+            var wakeup1TurnOffScheduleId = await _hueClient.CreateScheduleAsync(wakeup1TurnOffSchedule);
+
+            wakeup1TurnOffSchedule.AutoDelete = false;
+
+            await _hueClient.UpdateScheduleAsync(wakeup1TurnOffScheduleId, wakeup1TurnOffSchedule);
+
+            Console.WriteLine($"Schedule ({wakeup1TurnOffSchedule.Name}) with id {wakeup1TurnOffScheduleId} created");
+
+            return await _hueClient.GetScheduleAsync(wakeup1TurnOffScheduleId);
         }
     }
 }

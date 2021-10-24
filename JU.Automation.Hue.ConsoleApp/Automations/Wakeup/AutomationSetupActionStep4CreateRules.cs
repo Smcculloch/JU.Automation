@@ -3,22 +3,27 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
+using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
     public class AutomationSetupActionStep4CreateRules : AutomationSetupActionStepBase<AutomationSetupActionStep4CreateRules, WakeupModel>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public AutomationSetupActionStep4CreateRules(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep4CreateRules> logger): base(logger)
+            ILogger<AutomationSetupActionStep4CreateRules> logger,
+            ISettingsProvider settingsProvider): base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 4;
@@ -42,6 +47,14 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 throw new ArgumentNullException(
                     $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} schedules cannot be null");
 
+            model.Rules.TriggerRule = await CreateTriggerRule(model.Group, model.TriggerSensor, model.Scenes.Init, model.Schedules.Wakeup);
+            model.Rules.TurnOffRule = await CreateTurnOffRule(model.TriggerSensor, model.Schedules.TurnOff);
+
+            return model;
+        }
+
+        private async Task<Rule> CreateTriggerRule(Group group, Sensor triggerSensor, Scene initScene, Schedule wakeupSchedule)
+        {
             var wakeup1Rule = new Rule
             {
                 Name = Constants.Rules.Wakeup1Rule,
@@ -49,7 +62,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 {
                     new()
                     {
-                        Address = $"/sensors/{model.TriggerSensor.Id}/state/flag",
+                        Address = $"/sensors/{triggerSensor.Id}/state/flag",
                         Operator = RuleOperator.Equal,
                         Value = "true"
                     }
@@ -58,26 +71,26 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 {
                     new()
                     {
-                        Address = $"/schedules/{model.Schedules.Wakeup.Id}",
+                        Address = $"/schedules/{wakeupSchedule.Id}",
                         Method = HttpMethod.Put,
                         Body = new GenericScheduleCommand(JsonSerialize(new Schedule { Status = ScheduleStatus.Enabled }))
                     },
+                    //new()
+                    //{
+                    //    Address = $"/sensors/{triggerSensor.Id}/state",
+                    //    Method = HttpMethod.Put,
+                    //    Body = new SensorState
+                    //    {
+                    //        Flag = false
+                    //    }
+                    //},
                     new()
                     {
-                        Address = $"/sensors/{model.TriggerSensor.Id}/state",
-                        Method = HttpMethod.Put,
-                        Body = new SensorState
-                        {
-                            Flag = false
-                        }
-                    },
-                    new()
-                    {
-                        Address = $"/groups/{model.Group.Id}/action",
+                        Address = $"/groups/{group.Id}/action",
                         Method = HttpMethod.Put,
                         Body = new SceneCommand
                         {
-                            Scene = model.Scenes.Init.Id
+                            Scene = initScene.Id
                         }
                     }
                 }
@@ -87,9 +100,56 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Rule with id {wakeup1RuleId} created");
 
-            model.TriggerRule = await _hueClient.GetRuleAsync(wakeup1RuleId);
+            return await _hueClient.GetRuleAsync(wakeup1RuleId);
+        }
 
-            return model;
+        private async Task<Rule> CreateTurnOffRule(Sensor triggerSensor, Schedule turnOffSchedule)
+        {
+            var turnOffDelay = _settingsProvider.WakeupTransitionInMinutes + 1;
+
+            var wakeup1TurnOffRule = new Rule
+            {
+                Name = Constants.Rules.Wakeup1Rule,
+                Conditions = new List<RuleCondition>
+                {
+                    new()
+                    {
+                        Address = $"/sensors/{triggerSensor.Id}/state/flag",
+                        Operator = RuleOperator.Equal,
+                        Value = "true"
+                    },
+                    new()
+                    {
+                        Address = $"/sensors/{triggerSensor.Id}/state/flag",
+                        Operator = RuleOperator.Ddx,
+                        Value = $"PT00:{turnOffDelay:D2}:00"
+                    }
+                },
+                Actions = new List<InternalBridgeCommand>
+                {
+                    new()
+                    {
+                        Address = $"/schedules/{turnOffSchedule.Id}",
+                        Method = HttpMethod.Put,
+                        Body = new GenericScheduleCommand(JsonSerialize(new Schedule { Status = ScheduleStatus.Enabled }))
+                    },
+                    new()
+                    {
+                        Address = $"/sensors/{triggerSensor.Id}/state",
+                        Method = HttpMethod.Put,
+                        Body = new SensorState
+                        {
+                            Flag = false
+                        }
+                    }
+                }
+            };
+
+            var wakeup1TurnOffRuleId = await _hueClient.CreateRule(wakeup1TurnOffRule);
+
+            Console.WriteLine($"Rule with id {wakeup1TurnOffRuleId} created");
+
+            return await _hueClient.GetRuleAsync(wakeup1TurnOffRuleId);
         }
     }
 }

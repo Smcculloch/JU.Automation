@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -12,12 +13,15 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
     public class AutomationSetupActionStep2CreateScenes : AutomationSetupActionStepBase<AutomationSetupActionStep2CreateScenes, WakeupModel>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public AutomationSetupActionStep2CreateScenes(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep2CreateScenes> logger): base(logger)
+            ILogger<AutomationSetupActionStep2CreateScenes> logger,
+            ISettingsProvider settingsProvider): base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 2;
@@ -35,6 +39,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             model.Scenes.Init = await CreateInitScene(model.Group);
             model.Scenes.Wakeup = await CreateWakeupScene(model.Group);
+            model.Scenes.TurnOff = await CreateTurnOffScene(model.Group);
 
             return model;
         }
@@ -103,13 +108,50 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                         On = true,
                         Brightness = 255,
                         ColorTemperature = 447,
-                        TransitionTime = TimeSpan.FromMinutes(15)
+                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionInMinutes)
                     });
             }
 
             Console.WriteLine($"Scene ({wakeup1WakeupScene.Name}) with id {wakeup1WakeupSceneId} created");
 
             return await _hueClient.GetSceneAsync(wakeup1WakeupSceneId);
+        }
+
+        private async Task<Scene> CreateTurnOffScene(Group group)
+        {
+            var wakeup1TurnOffScene = new Scene
+            {
+                Name = Constants.Scenes.Wakeup1TurnOff,
+                Lights = group.Lights,
+                Recycle = true
+            };
+
+            var wakeup1TurnOffSceneId = await _hueClient.CreateSceneAsync(wakeup1TurnOffScene);
+
+            wakeup1TurnOffScene = await _hueClient.GetSceneAsync(wakeup1TurnOffSceneId);
+
+            wakeup1TurnOffScene.Type = SceneType.GroupScene;
+            wakeup1TurnOffScene.Group = group.Id;
+
+            await _hueClient.UpdateSceneAsync(wakeup1TurnOffSceneId, wakeup1TurnOffScene);
+
+            foreach (var lightId in group.Lights)
+            {
+                await _hueClient.ModifySceneAsync(
+                    wakeup1TurnOffSceneId,
+                    lightId,
+                    new LightCommand
+                    {
+                        On = true,
+                        Brightness = 1,
+                        ColorTemperature = 447,
+                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.TurnOffTransitionInMinutes)
+                    });
+            }
+
+            Console.WriteLine($"Scene ({wakeup1TurnOffScene.Name}) with id {wakeup1TurnOffSceneId} created");
+
+            return await _hueClient.GetSceneAsync(wakeup1TurnOffSceneId);
         }
     }
 }

@@ -12,12 +12,14 @@
         {
             public const string Wakeup1Init = "Wakeup1Init";
             public const string Wakeup1Wakeup = "Wakeup1Wakeup";
+            public const string Wakeup1TurnOff = "Wakeup1TurnOff";
         }
 
         public class Schedules
         {
             public const string Wakeup1Start = "Wakeup1Start";
             public const string Wakeup1Wakeup = "Wakeup1Wakeup";
+            public const string Wakeup1TurnOff = "Wakeup1TurnOff";
         }
 
         public class Rules
