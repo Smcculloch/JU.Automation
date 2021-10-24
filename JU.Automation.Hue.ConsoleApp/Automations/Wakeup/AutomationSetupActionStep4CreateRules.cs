@@ -87,23 +87,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Rule with id {wakeup1RuleId} created");
 
-            return new WakeupModel
-            {
-                Group = model.Group,
-                Lights = model.Lights,
-                TriggerSensor = model.TriggerSensor,
-                Scenes =
-                {
-                    Init = model.Scenes.Init,
-                    Wakeup = model.Scenes.Wakeup
-                },
-                Schedules =
-                {
-                    Start = model.Schedules.Start,
-                    Wakeup = model.Schedules.Wakeup
-                },
-                TriggerRule = await _hueClient.GetRuleAsync(wakeup1RuleId)
-            };
+            model.TriggerRule = await _hueClient.GetRuleAsync(wakeup1RuleId);
+
+            return model;
         }
     }
 }

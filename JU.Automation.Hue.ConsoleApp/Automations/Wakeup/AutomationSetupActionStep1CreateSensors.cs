@@ -51,12 +51,16 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Sensor ({wakeup1Sensor.Name}) with id {sensorId} created");
 
-            return new WakeupModel
-            {
-                Group = model.Group,
-                Lights = model.Lights,
-                TriggerSensor = await _hueClient.GetSensorAsync(sensorId)
-            };
+            model.TriggerSensor = await _hueClient.GetSensorAsync(sensorId);
+
+            return model;
+
+            //return new WakeupModel
+            //{
+            //    Group = model.Group,
+            //    Lights = model.Lights,
+            //    TriggerSensor = await _hueClient.GetSensorAsync(sensorId)
+            //};
         }
     }
 }

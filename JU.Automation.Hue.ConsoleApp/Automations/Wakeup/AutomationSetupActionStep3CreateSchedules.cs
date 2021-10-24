@@ -42,25 +42,10 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 throw new ArgumentNullException(
                     $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} scenes cannot be null");
 
-            var startSchedule = await CreateStartSchedule(model.TriggerSensor);
-            var wakeupSchedule = await CreateWakeupSchedule(model.Scenes.Wakeup);
+            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor);
+            model.Schedules.Wakeup = await CreateWakeupSchedule(model.Scenes.Wakeup);
 
-            return new WakeupModel
-            {
-                Group = model.Group,
-                Lights = model.Lights,
-                TriggerSensor = model.TriggerSensor,
-                Scenes =
-                {
-                    Init = model.Scenes.Init,
-                    Wakeup = model.Scenes.Wakeup
-                },
-                Schedules =
-                {
-                    Start = startSchedule,
-                    Wakeup = wakeupSchedule
-                }
-            };
+            return model;
         }
 
         private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor)

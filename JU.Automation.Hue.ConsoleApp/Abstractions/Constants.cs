@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace JU.Automation.Hue.ConsoleApp.Abstractions
+﻿namespace JU.Automation.Hue.ConsoleApp.Abstractions
 {
     public class Constants
     {
