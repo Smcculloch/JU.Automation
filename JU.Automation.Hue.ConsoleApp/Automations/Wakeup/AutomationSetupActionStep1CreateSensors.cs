@@ -8,7 +8,7 @@ using Q42.HueApi.Models.Sensors.CLIP;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep1CreateSensors : AutomationSetupActionStepBase<AutomationSetupActionStep1CreateSensors>
+    public class AutomationSetupActionStep1CreateSensors : AutomationSetupActionStepBase<AutomationSetupActionStep1CreateSensors, WakeupModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
@@ -24,8 +24,14 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override int Step => 1;
 
-        public override async Task<bool> ExecuteStep()
+        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.Group == null)
+                throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
+
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
+
             var wakeup1Sensor = new Sensor
             {
                 Config = new SensorConfig
@@ -45,7 +51,12 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Sensor ({wakeup1Sensor.Name}) with id {sensorId} created");
 
-            return true;
+            return new WakeupModel
+            {
+                Group = model.Group,
+                Lights = model.Lights,
+                TriggerSensor = await _hueClient.GetSensorAsync(sensorId)
+            };
         }
     }
 }

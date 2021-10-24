@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
-using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -11,31 +9,52 @@ using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep2CreateScenes : AutomationSetupActionStepBase<AutomationSetupActionStep2CreateScenes>
+    public class AutomationSetupActionStep2CreateScenes : AutomationSetupActionStepBase<AutomationSetupActionStep2CreateScenes, WakeupModel>
     {
         private readonly IHueClient _hueClient;
 
         public AutomationSetupActionStep2CreateScenes(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep2CreateScenes> logger,
-            ISettingsProvider settingsProvider): base(logger)
+            ILogger<AutomationSetupActionStep2CreateScenes> logger): base(logger)
         {
             _hueClient = hueClient;
         }
 
         public override int Step => 2;
 
-        public override async Task<bool> ExecuteStep()
+        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
-            var groupBedroom = await GetGroup(Constants.Groups.Bedroom);
+            if (model.Group == null)
+                throw new ArgumentNullException($"{model.Group} cannot be null");
 
-            if (groupBedroom?.Lights == null)
-                throw new ArgumentNullException($"{Constants.Groups.Bedroom} ({nameof(Group.Lights)}) cannot be null");
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{model.Lights} cannot be null");
 
+            if (model.TriggerSensor == null)
+                throw new ArgumentNullException($"{model.TriggerSensor} cannot be null");
+
+            var initScene = await CreateInitScene(model.Group);
+            var wakeupScene = await CreateWakeupScene(model.Group);
+
+            return new WakeupModel
+            {
+                Group = model.Group,
+                Lights = model.Lights,
+                TriggerSensor = model.TriggerSensor,
+                Scenes =
+                {
+                    Init = initScene,
+                    Wakeup = wakeupScene
+                }
+            };
+        }
+
+        private async Task<Scene> CreateInitScene(Group group)
+        {
             var wakeup1InitScene = new Scene
             {
                 Name = Constants.Scenes.Wakeup1Init,
-                Lights = groupBedroom.Lights,
+                Lights = group.Lights,
                 Recycle = true
             };
 
@@ -44,11 +63,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             wakeup1InitScene = await _hueClient.GetSceneAsync(wakeup1InitSceneId);
 
             wakeup1InitScene.Type = SceneType.GroupScene;
-            wakeup1InitScene.Group = groupBedroom.Id;
+            wakeup1InitScene.Group = group.Id;
 
             await _hueClient.UpdateSceneAsync(wakeup1InitSceneId, wakeup1InitScene);
 
-            foreach (var lightId in groupBedroom.Lights)
+            foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
                     wakeup1InitSceneId,
@@ -63,26 +82,31 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Scene ({wakeup1InitScene.Name}) with id {wakeup1InitSceneId} created");
 
-            var wakeup1EndScene = new Scene
+            return await _hueClient.GetSceneAsync(wakeup1InitSceneId);
+        }
+
+        private async Task<Scene> CreateWakeupScene(Group group)
+        {
+            var wakeup1WakeupScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1End,
-                Lights = groupBedroom.Lights,
+                Name = Constants.Scenes.Wakeup1Wakeup,
+                Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1EndSceneId = await _hueClient.CreateSceneAsync(wakeup1EndScene);
+            var wakeup1WakeupSceneId = await _hueClient.CreateSceneAsync(wakeup1WakeupScene);
 
-            wakeup1EndScene = await _hueClient.GetSceneAsync(wakeup1EndSceneId);
+            wakeup1WakeupScene = await _hueClient.GetSceneAsync(wakeup1WakeupSceneId);
 
-            wakeup1EndScene.Type = SceneType.GroupScene;
-            wakeup1EndScene.Group = groupBedroom.Id;
+            wakeup1WakeupScene.Type = SceneType.GroupScene;
+            wakeup1WakeupScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1EndSceneId, wakeup1EndScene);
+            await _hueClient.UpdateSceneAsync(wakeup1WakeupSceneId, wakeup1WakeupScene);
 
-            foreach (var lightId in groupBedroom.Lights)
+            foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1EndSceneId,
+                    wakeup1WakeupSceneId,
                     lightId,
                     new LightCommand
                     {
@@ -93,16 +117,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1EndScene.Name}) with id {wakeup1EndSceneId} created");
+            Console.WriteLine($"Scene ({wakeup1WakeupScene.Name}) with id {wakeup1WakeupSceneId} created");
 
-            return true;
-        }
-
-        private async Task<Group> GetGroup(string groupName)
-        {
-            var groups = await _hueClient.GetGroupsAsync();
-
-            return groups.SingleOrDefault(g => g.Name == groupName);
+            return await _hueClient.GetSceneAsync(wakeup1WakeupSceneId);
         }
     }
 }

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public abstract class AutomationSetupActionStepBase<T>: IWakeupAutomationSetupAction, IStep
+    public abstract class AutomationSetupActionStepBase<T, TModel>: IWakeupAutomationSetupAction<TModel>, IStep where TModel : class
     {
         private readonly ILogger<T> _logger;
 
@@ -17,15 +17,15 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public abstract int Step { get; }
 
-        public abstract Task<bool> ExecuteStep();
+        public abstract Task<TModel> ExecuteStep(TModel model);
 
-        public async Task<bool> Execute()
+        public async Task<TModel> Execute(TModel model)
         {
-            var success = await ExecuteStep();
+            var result = await ExecuteStep(model);
 
             _logger.LogInformation($"Automation Setup {GetType().Name} (step {Step}) completed");
 
-            return success;
+            return result;
         }
 
         protected string JsonSerialize(object obj)

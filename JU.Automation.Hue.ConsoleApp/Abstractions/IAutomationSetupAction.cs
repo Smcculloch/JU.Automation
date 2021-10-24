@@ -2,10 +2,10 @@
 
 namespace JU.Automation.Hue.ConsoleApp.Abstractions
 {
-    public interface IAutomationSetupAction
+    public interface IAutomationSetupAction<TModel> where TModel : class
     {
-        Task<bool> Execute();
+        Task<TModel> Execute(TModel model);
     }
 
-    public interface IWakeupAutomationSetupAction : IAutomationSetupAction  { }
+    public interface IWakeupAutomationSetupAction<TModel> : IAutomationSetupAction<TModel> where TModel : class { }
 }

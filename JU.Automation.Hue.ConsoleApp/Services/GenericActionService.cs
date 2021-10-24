@@ -27,10 +27,10 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
         public async Task ShowConfig()
         {
-            var bridges = await _bridgeLocator.LocateBridgesAsync(TimeSpan.FromSeconds(5));
+            var locatedBridges = await _bridgeLocator.LocateBridgesAsync(TimeSpan.FromSeconds(5));
 
-            foreach (var bridge in bridges)
-                Console.WriteLine($"Discovered {bridge.BridgeId} ({bridge.IpAddress})");
+            foreach (var locatedBridge in locatedBridges)
+                Console.WriteLine($"Discovered {locatedBridge.BridgeId} ({locatedBridge.IpAddress})");
         }
 
         public async Task IdentifyLights()

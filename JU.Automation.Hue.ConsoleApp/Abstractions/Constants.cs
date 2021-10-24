@@ -13,13 +13,13 @@ namespace JU.Automation.Hue.ConsoleApp.Abstractions
         public class Scenes
         {
             public const string Wakeup1Init = "Wakeup1Init";
-            public const string Wakeup1End = "Wakeup1End";
+            public const string Wakeup1Wakeup = "Wakeup1Wakeup";
         }
 
         public class Schedules
         {
             public const string Wakeup1Start = "Wakeup1Start";
-            public const string Wakeup1EndScene = "Wakeup1EndScene";
+            public const string Wakeup1Wakeup = "Wakeup1Wakeup";
         }
 
         public class Rules

@@ -34,12 +34,12 @@ namespace JU.Automation.Hue.ConsoleApp
                         await _hueSetupCoordinator.GetConfig();
                         break;
                     case 2:
-                        Console.WriteLine($"Running create new developer{Environment.NewLine}");
-                        await _hueSetupCoordinator.CreateNewDeveloper();
-                        break;
-                    case 3:
                         Console.WriteLine($"Running identify lights{Environment.NewLine}");
                         await _hueSetupCoordinator.IdentifyLightsAsync();
+                        break;
+                    case 3:
+                        Console.WriteLine($"Running create new developer{Environment.NewLine}");
+                        await _hueSetupCoordinator.CreateNewDeveloper();
                         break;
                     case 4:
                         Console.WriteLine($"Running setup{Environment.NewLine}");
@@ -50,15 +50,15 @@ namespace JU.Automation.Hue.ConsoleApp
                         await _hueSetupCoordinator.FullSetupAdvancedAsync();
                         break;
                     case 6:
-                        Console.WriteLine($"Running automations setup{Environment.NewLine}");
-                        await _hueSetupCoordinator.CreateAutomationsAsync();
-                        break;
-                    case 8:
                         Console.WriteLine($"Running reset{Environment.NewLine}");
                         await _hueSetupCoordinator.FullResetAsync();
                         break;
+                    case 8:
+                        Console.WriteLine($"Running automation(s) setup{Environment.NewLine}");
+                        await _hueSetupCoordinator.CreateAutomationsAsync();
+                        break;
                     case 9:
-                        Console.WriteLine($"Running automations reset{Environment.NewLine}");
+                        Console.WriteLine($"Running automation(s) reset{Environment.NewLine}");
                         await _hueSetupCoordinator.ResetAutomationsAsync();
                         break;
                     default:
@@ -80,16 +80,20 @@ namespace JU.Automation.Hue.ConsoleApp
             Console.Clear();
 
             Console.WriteLine($"Menu (Hue: {_settingsProvider.LocalHueClientIp})");
+            Console.WriteLine($"{Environment.NewLine}--- Troubleshooting ---");
             Console.WriteLine("(1) Show Config");
-            Console.WriteLine("(2) New Developer");
-            Console.WriteLine("(3) Identify lights");
+            Console.WriteLine("(2) Identify lights");
+            Console.WriteLine($"{Environment.NewLine}--- Setup ---");
+            Console.WriteLine("(3) New Developer");
             Console.WriteLine("(4) Full Setup");
-            Console.WriteLine("(5) Full Setup (using serial #'s)");
-            Console.WriteLine("(6) Automations Setup");
-            Console.WriteLine("(8) Full Reset");
-            Console.WriteLine("(9) Automations Reset");
+            Console.WriteLine("(5) Advanced Setup (using serial #'s)");
+            Console.WriteLine("(6) Full Reset");
+            Console.WriteLine($"{Environment.NewLine}--- Automation ---");
+            Console.WriteLine("(8) Automation(s) Setup");
+            Console.WriteLine("(9) Automation(s) Reset");
+            Console.WriteLine($"{Environment.NewLine}---");
             Console.WriteLine("(0) Exit");
-            Console.Write("Select: ");
+            Console.Write($"{Environment.NewLine}Select: ");
 
             var input = Console.ReadLine();
 

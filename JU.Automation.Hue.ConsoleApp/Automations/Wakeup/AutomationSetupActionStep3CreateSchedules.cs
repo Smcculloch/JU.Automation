@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
@@ -12,7 +11,7 @@ using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep3CreateSchedules : AutomationSetupActionStepBase<AutomationSetupActionStep3CreateSchedules>
+    public class AutomationSetupActionStep3CreateSchedules : AutomationSetupActionStepBase<AutomationSetupActionStep3CreateSchedules, WakeupModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
@@ -28,7 +27,43 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override int Step => 3;
 
-        public override async Task<bool> ExecuteStep()
+        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
+        {
+            if (model.Group == null)
+                throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
+
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
+
+            if (model.TriggerSensor == null)
+                throw new ArgumentNullException($"{nameof(model.TriggerSensor)} cannot be null");
+
+            if (model.Scenes?.Init == null || model.Scenes?.Wakeup == null)
+                throw new ArgumentNullException(
+                    $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} scenes cannot be null");
+
+            var startSchedule = await CreateStartSchedule(model.TriggerSensor);
+            var wakeupSchedule = await CreateWakeupSchedule(model.Scenes.Wakeup);
+
+            return new WakeupModel
+            {
+                Group = model.Group,
+                Lights = model.Lights,
+                TriggerSensor = model.TriggerSensor,
+                Scenes =
+                {
+                    Init = model.Scenes.Init,
+                    Wakeup = model.Scenes.Wakeup
+                },
+                Schedules =
+                {
+                    Start = startSchedule,
+                    Wakeup = wakeupSchedule
+                }
+            };
+        }
+
+        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor)
         {
             var wakeUpTime = DateTime.Now.AddMinutes(10).TimeOfDay;
 
@@ -42,14 +77,12 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 } while (!TimeSpan.TryParseExact(wakeUpTimeInput, "hhmm", null, TimeSpanStyles.None, out wakeUpTime));
             }
 
-            var wakeup1SensorId = await GetSensorId(_settingsProvider.Wakeup1SensorUniqueId);
-
             var wakeup1TriggerSchedule = new Schedule
             {
                 Name = Constants.Schedules.Wakeup1Start,
                 Command = new InternalBridgeCommand
                 {
-                    Address = $"/api/{_settingsProvider.AppKey}/sensors/{wakeup1SensorId}/state",
+                    Address = $"/api/{_settingsProvider.AppKey}/sensors/{triggerSensor.Id}/state",
                     Body = new SensorState
                     {
                         Flag = true
@@ -58,7 +91,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 },
                 LocalTime = new HueDateTime
                 {
-                    RecurringDay = RecurringDay.RecurringWeekdays,
+                    RecurringDay = RecurringDay.RecurringWeekdays | RecurringDay.RecurringWeekend,
                     TimerTime = wakeUpTime
                 },
                 Status = ScheduleStatus.Enabled
@@ -72,19 +105,20 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Schedule ({wakeup1TriggerSchedule.Name}) with id {wakeup1TriggerScheduleId} created");
 
-            /***************************************************************************************************************/
+            return await _hueClient.GetScheduleAsync(wakeup1TriggerScheduleId);
+        }
 
-            var wakeup1EndSceneId = await GetSceneId(Constants.Scenes.Wakeup1End);
-
-            var wakeup1EndSceneSchedule = new Schedule
+        private async Task<Schedule> CreateWakeupSchedule(Scene wakeupScene)
+        {
+            var wakeup1WakeupSchedule = new Schedule
             {
-                Name = Constants.Schedules.Wakeup1EndScene,
+                Name = Constants.Schedules.Wakeup1Wakeup,
                 Command = new InternalBridgeCommand
                 {
                     Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
                     Body = new SceneCommand
                     {
-                        Scene = wakeup1EndSceneId
+                        Scene = wakeupScene.Id
                     },
                     Method = HttpMethod.Put
                 },
@@ -96,29 +130,15 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 Status = ScheduleStatus.Disabled
             };
 
-            var wakeup1EndSceneScheduleId = await _hueClient.CreateScheduleAsync(wakeup1EndSceneSchedule);
+            var wakeup1WakeupScheduleId = await _hueClient.CreateScheduleAsync(wakeup1WakeupSchedule);
 
-            wakeup1EndSceneSchedule.AutoDelete = false;
+            wakeup1WakeupSchedule.AutoDelete = false;
 
-            await _hueClient.UpdateScheduleAsync(wakeup1EndSceneScheduleId, wakeup1EndSceneSchedule);
+            await _hueClient.UpdateScheduleAsync(wakeup1WakeupScheduleId, wakeup1WakeupSchedule);
 
-            Console.WriteLine($"Schedule ({wakeup1EndSceneSchedule.Name}) with id {wakeup1EndSceneScheduleId} created");
+            Console.WriteLine($"Schedule ({wakeup1WakeupSchedule.Name}) with id {wakeup1WakeupScheduleId} created");
 
-            return true;
-        }
-
-        private async Task<string> GetSensorId(string sensorUniqueId)
-        {
-            var sensors = await _hueClient.GetSensorsAsync();
-
-            return sensors.SingleOrDefault(s => s.UniqueId == sensorUniqueId)?.Id ?? string.Empty;
-        }
-
-        private async Task<string> GetSceneId(string sceneName)
-        {
-            var scenes = await _hueClient.GetScenesAsync();
-
-            return scenes.SingleOrDefault(s => s.Name == sceneName)?.Id ?? string.Empty;
+            return await _hueClient.GetScheduleAsync(wakeup1WakeupScheduleId);
         }
     }
 }

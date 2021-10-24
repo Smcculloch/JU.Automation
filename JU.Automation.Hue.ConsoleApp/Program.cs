@@ -49,10 +49,10 @@ namespace JU.Automation.Hue.ConsoleApp
                        services.AddTransient<ISetupAction, SetupActionStep1RenameLights>();
                        services.AddTransient<ISetupAction, SetupActionStep2GroupLights>();
 
-                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep1CreateSensors>();
-                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep2CreateScenes>();
-                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep3CreateSchedules>();
-                       services.AddTransient<IWakeupAutomationSetupAction, AutomationSetupActionStep4CreateRules>();
+                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep1CreateSensors>();
+                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep2CreateScenes>();
+                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep3CreateSchedules>();
+                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep4CreateRules>();
 
                        services.AddTransient<IAutomationActionService, AutomationActionService>();
                        services.AddTransient<IGenericActionService, GenericActionService>();

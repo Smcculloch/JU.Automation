@@ -60,7 +60,7 @@ namespace JU.Automation.Hue.ConsoleApp
                 await CreateAutomationsAsync();
         }
 
-        public async Task CreateAutomationsAsync() => await _automationActionService.CreateWakeupAutomation();
+        public async Task CreateAutomationsAsync() => await _automationActionService.CreateBedroomWakeupAutomation();
 
         public async Task FullResetAsync() => await _resetActionService.FullReset();
 

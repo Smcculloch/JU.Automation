@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
-using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -12,28 +10,37 @@ using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep4CreateRules : AutomationSetupActionStepBase<AutomationSetupActionStep4CreateRules>
+    public class AutomationSetupActionStep4CreateRules : AutomationSetupActionStepBase<AutomationSetupActionStep4CreateRules, WakeupModel>
     {
         private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
 
         public AutomationSetupActionStep4CreateRules(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep4CreateRules> logger,
-            ISettingsProvider settingsProvider): base(logger)
+            ILogger<AutomationSetupActionStep4CreateRules> logger): base(logger)
         {
             _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 4;
 
-        public override async Task<bool> ExecuteStep()
+        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
-            var bedroomGroupId = await GetGroupId(Constants.Groups.Bedroom);
-            var wakeup1SensorId = await GetSensorId(_settingsProvider.Wakeup1SensorUniqueId);
-            var wakeup1InitSceneId = await GetSceneId(Constants.Scenes.Wakeup1Init);
-            var wakeup1EndSceneScheduleId = await GetScheduleId(Constants.Schedules.Wakeup1EndScene);
+            if (model.Group == null)
+                throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
+
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
+
+            if (model.TriggerSensor == null)
+                throw new ArgumentNullException($"{nameof(model.TriggerSensor)} cannot be null");
+
+            if (model.Scenes?.Init == null || model.Scenes?.Wakeup == null)
+                throw new ArgumentNullException(
+                    $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} scenes cannot be null");
+
+            if (model.Schedules?.Start == null || model.Schedules?.Wakeup == null)
+                throw new ArgumentNullException(
+                    $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} schedules cannot be null");
 
             var wakeup1Rule = new Rule
             {
@@ -42,7 +49,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 {
                     new()
                     {
-                        Address = $"/sensors/{wakeup1SensorId}/state/flag",
+                        Address = $"/sensors/{model.TriggerSensor.Id}/state/flag",
                         Operator = RuleOperator.Equal,
                         Value = "true"
                     }
@@ -51,13 +58,13 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 {
                     new()
                     {
-                        Address = $"/schedules/{wakeup1EndSceneScheduleId}",
+                        Address = $"/schedules/{model.Schedules.Wakeup.Id}",
                         Method = HttpMethod.Put,
                         Body = new GenericScheduleCommand(JsonSerialize(new Schedule { Status = ScheduleStatus.Enabled }))
                     },
                     new()
                     {
-                        Address = $"/sensors/{wakeup1SensorId}/state",
+                        Address = $"/sensors/{model.TriggerSensor.Id}/state",
                         Method = HttpMethod.Put,
                         Body = new SensorState
                         {
@@ -66,11 +73,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     },
                     new()
                     {
-                        Address = $"/groups/{bedroomGroupId}/action",
+                        Address = $"/groups/{model.Group.Id}/action",
                         Method = HttpMethod.Put,
                         Body = new SceneCommand
                         {
-                            Scene = wakeup1InitSceneId
+                            Scene = model.Scenes.Init.Id
                         }
                     }
                 }
@@ -80,35 +87,23 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Rule with id {wakeup1RuleId} created");
 
-            return true;
-        }
-
-        private async Task<string> GetGroupId(string groupName)
-        {
-            var groups = await _hueClient.GetGroupsAsync();
-
-            return groups.SingleOrDefault(s => s.Name == groupName)?.Id ?? string.Empty;
-        }
-
-        private async Task<string> GetSensorId(string sensorUniqueId)
-        {
-            var sensors = await _hueClient.GetSensorsAsync();
-
-            return sensors.SingleOrDefault(s => s.UniqueId == sensorUniqueId)?.Id ?? string.Empty;
-        }
-
-        private async Task<string> GetSceneId(string sceneName)
-        {
-            var scenes = await _hueClient.GetScenesAsync();
-
-            return scenes.SingleOrDefault(s => s.Name == sceneName)?.Id ?? string.Empty;
-        }
-
-        private async Task<string> GetScheduleId(string scheduleName)
-        {
-            var schedules = await _hueClient.GetSchedulesAsync();
-
-            return schedules.SingleOrDefault(s => s.Name == scheduleName)?.Id ?? string.Empty;
+            return new WakeupModel
+            {
+                Group = model.Group,
+                Lights = model.Lights,
+                TriggerSensor = model.TriggerSensor,
+                Scenes =
+                {
+                    Init = model.Scenes.Init,
+                    Wakeup = model.Scenes.Wakeup
+                },
+                Schedules =
+                {
+                    Start = model.Schedules.Start,
+                    Wakeup = model.Schedules.Wakeup
+                },
+                TriggerRule = await _hueClient.GetRuleAsync(wakeup1RuleId)
+            };
         }
     }
 }
