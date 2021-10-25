@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.17.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
+    <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Q42.HueApi" Version="3.16.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -22,10 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JU.Automation.Hue.ConsoleApp\JU.Automation.Hue.ConsoleApp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Automations\Wakeup\" />
   </ItemGroup>
 
 </Project>

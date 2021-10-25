@@ -78,15 +78,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                         Body = new GenericScheduleCommand(
                             new Schedule { Status = ScheduleStatus.Enabled }.JsonSerialize() ?? string.Empty)
                     },
-                    //new()
-                    //{
-                    //    Address = $"/sensors/{triggerSensor.Id}/state",
-                    //    Method = HttpMethod.Put,
-                    //    Body = new SensorState
-                    //    {
-                    //        Flag = false
-                    //    }
-                    //},
                     new()
                     {
                         Address = $"/groups/{group.Id}/action",
@@ -153,7 +144,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             Console.WriteLine($"Rule with id {wakeup1TurnOffRuleId} created");
 
-            return await _hueClient.GetRuleAsync(wakeup1TurnOffRuleId);
+            wakeup1TurnOffRule.Id = wakeup1TurnOffRuleId;
+
+            return wakeup1TurnOffRule;
         }
     }
 }
