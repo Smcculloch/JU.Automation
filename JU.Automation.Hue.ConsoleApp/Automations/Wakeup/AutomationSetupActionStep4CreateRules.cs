@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Extensions;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
@@ -47,7 +48,8 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 throw new ArgumentNullException(
                     $"Neither {nameof(model.Scenes.Init)} nor {nameof(model.Scenes.Wakeup)} schedules cannot be null");
 
-            model.Rules.TriggerRule = await CreateTriggerRule(model.Group, model.TriggerSensor, model.Scenes.Init, model.Schedules.Wakeup);
+            model.Rules.TriggerRule = await CreateTriggerRule(model.Group, model.TriggerSensor, model.Scenes.Init,
+                model.Schedules.Wakeup);
             model.Rules.TurnOffRule = await CreateTurnOffRule(model.TriggerSensor, model.Schedules.TurnOff);
 
             return model;
@@ -73,7 +75,8 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     {
                         Address = $"/schedules/{wakeupSchedule.Id}",
                         Method = HttpMethod.Put,
-                        Body = new GenericScheduleCommand(JsonSerialize(new Schedule { Status = ScheduleStatus.Enabled }))
+                        Body = new GenericScheduleCommand(
+                            new Schedule { Status = ScheduleStatus.Enabled }.JsonSerialize() ?? string.Empty)
                     },
                     //new()
                     //{
@@ -105,7 +108,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         private async Task<Rule> CreateTurnOffRule(Sensor triggerSensor, Schedule turnOffSchedule)
         {
-            var turnOffDelay = _settingsProvider.WakeupTransitionInMinutes + 1;
+            var turnOffDelay = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionInMinutes + 1);
 
             var wakeup1TurnOffRule = new Rule
             {
@@ -122,7 +125,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     {
                         Address = $"/sensors/{triggerSensor.Id}/state/flag",
                         Operator = RuleOperator.Ddx,
-                        Value = $"PT00:{turnOffDelay:D2}:00"
+                        Value = new HueDateTime { TimerTime = turnOffDelay }.JsonSerialize() ?? string.Empty
                     }
                 },
                 Actions = new List<InternalBridgeCommand>
@@ -131,7 +134,8 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     {
                         Address = $"/schedules/{turnOffSchedule.Id}",
                         Method = HttpMethod.Put,
-                        Body = new GenericScheduleCommand(JsonSerialize(new Schedule { Status = ScheduleStatus.Enabled }))
+                        Body = new GenericScheduleCommand(
+                            new Schedule { Status = ScheduleStatus.Enabled }.JsonSerialize() ?? string.Empty)
                     },
                     new()
                     {

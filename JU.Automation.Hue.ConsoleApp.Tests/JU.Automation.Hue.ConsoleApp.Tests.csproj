@@ -20,4 +20,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JU.Automation.Hue.ConsoleApp\JU.Automation.Hue.ConsoleApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Automations\Wakeup\" />
+  </ItemGroup>
+
 </Project>
