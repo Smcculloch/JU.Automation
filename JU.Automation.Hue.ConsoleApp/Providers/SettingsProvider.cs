@@ -8,9 +8,9 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         string LocalHueClientIp { get; }
         string AppKey { get; }
         bool EnableDebug { get; }
-        string Wakeup1SensorUniqueId { get; }
-        int WakeupTransitionInMinutes { get; }
-        int TurnOffTransitionInMinutes { get; }
+        int WakeupTransitionUpInMinutes { get; }
+        int WakeupTransitionDownDelayInMinutes { get; }
+        int WakeupTransitionDownInMinutes { get; }
         void SetAppKey(string appKey);
     }
 
@@ -19,9 +19,9 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         private const string HueIpCommandLineArg = "hue-ip";
         private const string HueAppKeyCommandLineArg = "hue-appkey";
         private const string EnableDebugCommandLineArg = "enable-debug";
-        private const string Wakeup1SensorUniqueIdKey = "Client:Wakeup1SensorUniqueId";
-        private const string WakeupTransitionInMinutesKey = "Client:WakeupTransitionInMinutes";
-        private const string TurnOffTransitionInMinutesKey = "Client:TurnOffTransitionInMinutes";
+        private const string WakeupTransitionInMinutesKey = "Client:WakeupTransitionUpInMinutes";
+        private const string WakeupTransitionDownDelayInMinutesKey = "Client:WakeupTransitionDownDelayInMinutes";
+        private const string WakeupTransitionDownInMinutesKey = "Client:WakeupTransitionDownInMinutes";
 
         private string _appKey;
 
@@ -48,9 +48,9 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         }
 
         public bool EnableDebug => bool.Parse(_configuration[EnableDebugCommandLineArg] ?? bool.FalseString);
-        public string Wakeup1SensorUniqueId => _configuration[Wakeup1SensorUniqueIdKey];
-        public int WakeupTransitionInMinutes => _configuration.GetValue<int>(WakeupTransitionInMinutesKey);
-        public int TurnOffTransitionInMinutes => _configuration.GetValue<int>(TurnOffTransitionInMinutesKey);
+        public int WakeupTransitionUpInMinutes => _configuration.GetValue<int>(WakeupTransitionInMinutesKey);
+        public int WakeupTransitionDownDelayInMinutes => _configuration.GetValue<int>(WakeupTransitionDownDelayInMinutesKey);
+        public int WakeupTransitionDownInMinutes => _configuration.GetValue<int>(WakeupTransitionDownInMinutesKey);
 
         public void SetAppKey(string appKey)
         {

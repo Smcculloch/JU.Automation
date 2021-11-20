@@ -34,9 +34,13 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
         }
 
         [Theory, AutoData]
-        public async Task ExecuteStep(string triggerSensorId, string turnOffScheduleId)
+        public async Task ExecuteStep_CreateRuleSuccessfully_TransitionDownTime(string triggerSensorId, string transitionDownScheduleId)
         {
-            _settingsProvider.SetupGet(m => m.WakeupTransitionInMinutes).Returns(15);
+            const int transitionUpMinutes = 15;
+            const int transitionDownDelayMinutes = 5;
+
+            _settingsProvider.SetupGet(m => m.WakeupTransitionUpInMinutes).Returns(transitionUpMinutes);
+            _settingsProvider.SetupGet(m => m.WakeupTransitionDownDelayInMinutes).Returns(transitionDownDelayMinutes);
 
             _hueClient.Setup(m => m.GetRuleAsync(It.IsAny<string>())).Returns(Task.FromResult(new Rule()));
 
@@ -48,21 +52,24 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
                 Scenes =
                 {
                     Init = new Scene(),
-                    Wakeup = new Scene()
+                    TransitionUp = new Scene(),
+                    TransitionDown = new Scene(),
+                    TurnOff = new Scene()
                 },
                 Schedules =
                 {
                     Start = new Schedule(),
-                    Wakeup = new Schedule(),
-                    TurnOff = new Schedule { Id = turnOffScheduleId }
+                    TransitionUp = new Schedule(),
+                    TransitionDown = new Schedule { Id = transitionDownScheduleId },
+                    TurnOff = new Schedule()
                 }
             });
 
-            Assert.NotNull(result.Rules.TurnOffRule);
+            Assert.NotNull(result.Rules.TurnOff);
             Assert.Collection(
-                result.Rules.TurnOffRule.Conditions,
+                result.Rules.TransitionDown.Conditions,
                 _ => { },
-                condition => Assert.Equal("PT00:16:00", condition.Value));
+                condition => Assert.Equal($"PT00:{transitionUpMinutes + transitionDownDelayMinutes + 1}:00", condition.Value));
         }
     }
 }

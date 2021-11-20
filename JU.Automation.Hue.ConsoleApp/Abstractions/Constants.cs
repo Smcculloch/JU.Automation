@@ -11,20 +11,24 @@
         public class Scenes
         {
             public const string Wakeup1Init = "Wakeup1Init";
-            public const string Wakeup1Wakeup = "Wakeup1Wakeup";
+            public const string Wakeup1TransitionUp = "Wakeup1TransitionUp";
+            public const string Wakeup1TransitionDown = "Wakeup1TransitionDown";
             public const string Wakeup1TurnOff = "Wakeup1TurnOff";
         }
 
         public class Schedules
         {
             public const string Wakeup1Start = "Wakeup1Start";
-            public const string Wakeup1Wakeup = "Wakeup1Wakeup";
+            public const string Wakeup1TransitionUp = "Wakeup1TransitionUp";
+            public const string Wakeup1TransitionDown = "Wakeup1TransitionDown";
             public const string Wakeup1TurnOff = "Wakeup1TurnOff";
         }
 
         public class Rules
         {
-            public const string Wakeup1Rule = "Wakeup1Rule";
+            public const string Wakeup1Trigger = "Wakeup1Trigger";
+            public const string Wakeup1TransitionDown = "Wakeup1TranstitionDown";
+            public const string Wakeup1TurnOff = "Wakeup1TurnOff";
         }
     }
 }

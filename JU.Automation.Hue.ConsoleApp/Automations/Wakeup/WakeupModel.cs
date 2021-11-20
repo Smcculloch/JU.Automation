@@ -18,21 +18,23 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
     public class WakeupScenes
     {
         public Scene Init { get; set; }
-        public Scene Wakeup { get; set; }
+        public Scene TransitionUp { get; set; }
+        public Scene TransitionDown { get; set; }
         public Scene TurnOff { get; set; }
     }
 
     public class WakeupSchedules
     {
         public Schedule Start { get; set; }
-        public Schedule Wakeup { get; set; }
+        public Schedule TransitionUp { get; set; }
+        public Schedule TransitionDown { get; set; }
         public Schedule TurnOff { get; set; }
     }
 
     public class WakeupRules
     {
-        public bool SoftOff { get; set; }
-        public Rule TriggerRule { get; set; }
-        public Rule TurnOffRule { get; set; }
+        public Rule Trigger { get; set; }
+        public Rule TransitionDown { get; set; }
+        public Rule TurnOff { get; set; }
     }
 }

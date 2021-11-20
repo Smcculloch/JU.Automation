@@ -39,12 +39,12 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     On = true,
                     Reachable = true
                 },
-                Name = "Wake-up 1",
+                Name = "Wake-up",
                 Type = nameof(CLIPGenericFlag),
                 ModelId = "WAKEUP",
                 ManufacturerName = "Philips",
                 SwVersion = "1.0",
-                UniqueId = _settingsProvider.Wakeup1SensorUniqueId
+                UniqueId = $"{Guid.NewGuid():N}"
             };
 
             var sensorId = await _hueClient.CreateSensorAsync(wakeup1Sensor);
@@ -54,13 +54,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             model.TriggerSensor = await _hueClient.GetSensorAsync(sensorId);
 
             return model;
-
-            //return new WakeupModel
-            //{
-            //    Group = model.Group,
-            //    Lights = model.Lights,
-            //    TriggerSensor = await _hueClient.GetSensorAsync(sensorId)
-            //};
         }
     }
 }

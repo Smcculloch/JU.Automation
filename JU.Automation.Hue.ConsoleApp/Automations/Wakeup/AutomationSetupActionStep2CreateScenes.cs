@@ -18,7 +18,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         public AutomationSetupActionStep2CreateScenes(
             IHueClient hueClient,
             ILogger<AutomationSetupActionStep2CreateScenes> logger,
-            ISettingsProvider settingsProvider): base(logger)
+            ISettingsProvider settingsProvider) : base(logger)
         {
             _hueClient = hueClient;
             _settingsProvider = settingsProvider;
@@ -38,7 +38,8 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 throw new ArgumentNullException($"{model.TriggerSensor} cannot be null");
 
             model.Scenes.Init = await CreateInitScene(model.Group);
-            model.Scenes.Wakeup = await CreateWakeupScene(model.Group);
+            model.Scenes.TransitionUp = await CreateTransitionUpScene(model.Group);
+            model.Scenes.TransitionDown = await CreateTransitionDownScene(model.Group);
             model.Scenes.TurnOff = await CreateTurnOffScene(model.Group);
 
             return model;
@@ -80,41 +81,78 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             return await _hueClient.GetSceneAsync(wakeup1InitSceneId);
         }
 
-        private async Task<Scene> CreateWakeupScene(Group group)
+        private async Task<Scene> CreateTransitionUpScene(Group group)
         {
-            var wakeup1WakeupScene = new Scene
+            var wakeup1TransitionUpScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1Wakeup,
+                Name = Constants.Scenes.Wakeup1TransitionUp,
                 Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1WakeupSceneId = await _hueClient.CreateSceneAsync(wakeup1WakeupScene);
+            var wakeup1TransitionUpSceneId = await _hueClient.CreateSceneAsync(wakeup1TransitionUpScene);
 
-            wakeup1WakeupScene = await _hueClient.GetSceneAsync(wakeup1WakeupSceneId);
+            wakeup1TransitionUpScene = await _hueClient.GetSceneAsync(wakeup1TransitionUpSceneId);
 
-            wakeup1WakeupScene.Type = SceneType.GroupScene;
-            wakeup1WakeupScene.Group = group.Id;
+            wakeup1TransitionUpScene.Type = SceneType.GroupScene;
+            wakeup1TransitionUpScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1WakeupSceneId, wakeup1WakeupScene);
+            await _hueClient.UpdateSceneAsync(wakeup1TransitionUpSceneId, wakeup1TransitionUpScene);
 
             foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1WakeupSceneId,
+                    wakeup1TransitionUpSceneId,
                     lightId,
                     new LightCommand
                     {
                         On = true,
                         Brightness = 255,
                         ColorTemperature = 447,
-                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionInMinutes)
+                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionUpInMinutes)
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1WakeupScene.Name}) with id {wakeup1WakeupSceneId} created");
+            Console.WriteLine($"Scene ({wakeup1TransitionUpScene.Name}) with id {wakeup1TransitionUpSceneId} created");
 
-            return await _hueClient.GetSceneAsync(wakeup1WakeupSceneId);
+            return await _hueClient.GetSceneAsync(wakeup1TransitionUpSceneId);
+        }
+
+        private async Task<Scene> CreateTransitionDownScene(Group group)
+        {
+            var wakeup1TransitionDownScene = new Scene
+            {
+                Name = Constants.Scenes.Wakeup1TurnOff,
+                Lights = group.Lights,
+                Recycle = true
+            };
+
+            var wakeup1TransitionDownSceneId = await _hueClient.CreateSceneAsync(wakeup1TransitionDownScene);
+
+            wakeup1TransitionDownScene = await _hueClient.GetSceneAsync(wakeup1TransitionDownSceneId);
+
+            wakeup1TransitionDownScene.Type = SceneType.GroupScene;
+            wakeup1TransitionDownScene.Group = group.Id;
+
+            await _hueClient.UpdateSceneAsync(wakeup1TransitionDownSceneId, wakeup1TransitionDownScene);
+
+            foreach (var lightId in group.Lights)
+            {
+                await _hueClient.ModifySceneAsync(
+                    wakeup1TransitionDownSceneId,
+                    lightId,
+                    new LightCommand
+                    {
+                        On = true,
+                        Brightness = 1,
+                        ColorTemperature = 447,
+                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionDownInMinutes)
+                    });
+            }
+
+            Console.WriteLine($"Scene ({wakeup1TransitionDownScene.Name}) with id {wakeup1TransitionDownSceneId} created");
+
+            return await _hueClient.GetSceneAsync(wakeup1TransitionDownSceneId);
         }
 
         private async Task<Scene> CreateTurnOffScene(Group group)
@@ -142,10 +180,8 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     lightId,
                     new LightCommand
                     {
-                        On = true,
-                        Brightness = 1,
-                        ColorTemperature = 447,
-                        TransitionTime = TimeSpan.FromMinutes(_settingsProvider.TurnOffTransitionInMinutes)
+                        On = false,
+                        Brightness = 0
                     });
             }
 
