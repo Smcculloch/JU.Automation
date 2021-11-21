@@ -2,7 +2,7 @@
 using System.IO;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Actions.Setup;
-using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
+using JU.Automation.Hue.ConsoleApp.Automations;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using JU.Automation.Hue.ConsoleApp.Services;
 using Microsoft.Extensions.Configuration;
@@ -49,15 +49,21 @@ namespace JU.Automation.Hue.ConsoleApp
                        services.AddTransient<ISetupAction, SetupActionStep1RenameLights>();
                        services.AddTransient<ISetupAction, SetupActionStep2GroupLights>();
 
-                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep1CreateSensors>();
-                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep2CreateScenes>();
-                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep3CreateSchedules>();
-                       services.AddTransient<IWakeupAutomationSetupAction<WakeupModel>, AutomationSetupActionStep4CreateRules>();
+                       services.AddTransient<IWakeupAutomationSetupAction<Automations.Wakeup.WakeupModel>, Automations.Wakeup.ActionStep1CreateSensors>();
+                       services.AddTransient<IWakeupAutomationSetupAction<Automations.Wakeup.WakeupModel>, Automations.Wakeup.ActionStep2CreateScenes>();
+                       services.AddTransient<IWakeupAutomationSetupAction<Automations.Wakeup.WakeupModel>, Automations.Wakeup.ActionStep3CreateSchedules>();
+                       services.AddTransient<IWakeupAutomationSetupAction<Automations.Wakeup.WakeupModel>, Automations.Wakeup.ActionStep4CreateRules>();
+
+                       services.AddTransient<ISunriseAutomationSetupAction<Automations.Sunrise.SunriseModel>, Automations.Sunrise.ActionStep1CreateSensors>();
+                       services.AddTransient<ISunriseAutomationSetupAction<Automations.Sunrise.SunriseModel>, Automations.Sunrise.ActionStep2CreateScenes>();
+                       services.AddTransient<ISunriseAutomationSetupAction<Automations.Sunrise.SunriseModel>, Automations.Sunrise.ActionStep3CreateSchedules>();
+                       services.AddTransient<ISunriseAutomationSetupAction<Automations.Sunrise.SunriseModel>, Automations.Sunrise.ActionStep4CreateRules>();
 
                        services.AddTransient<IAutomationActionService, AutomationActionService>();
                        services.AddTransient<IGenericActionService, GenericActionService>();
                        services.AddTransient<ISetupActionService, SetupActionService>();
                        services.AddTransient<IResetActionService, ResetActionService>();
+                       services.AddTransient<IUserInputService, UserInputService>();
 
                        services.AddScoped<IHueSetupCoordinator, HueSetupCoordinator>();
                    });

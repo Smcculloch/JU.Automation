@@ -27,18 +27,25 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
         {
             var newLights = (await _hueClient.GetNewLightsAsync()).AsEnumerable();
 
-            Console.WriteLine("Setup Living Room");
+            Console.WriteLine($"Setup {Constants.Groups.Bedroom}");
             Console.WriteLine("Select lights:");
             var groupLights = await SelectGroupLights(newLights);
-            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.LivingRoom, RoomClass.LivingRoom);
+            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.Bedroom, RoomClass.Bedroom);
             Console.WriteLine();
 
             newLights = newLights.Except(groupLights);
 
-            Console.WriteLine("Setup Bedroom");
+            Console.WriteLine($"Setup {Constants.Groups.Kitchen}");
             Console.WriteLine("Select lights:");
             groupLights = await SelectGroupLights(newLights);
-            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.Bedroom, RoomClass.Bedroom);
+            await _hueClient.CreateGroupAsync(groupLights.Select(light => light.Id), Constants.Groups.Kitchen, RoomClass.Kitchen);
+            Console.WriteLine();
+
+            newLights = newLights.Except(groupLights);
+
+            Console.WriteLine($"Setup {Constants.Groups.LivingRoom}");
+            Console.WriteLine($"Using remaining light(s) in the living room: {string.Join(", ", newLights.Select(light => light.Id))}");
+            await _hueClient.CreateGroupAsync(newLights.Select(light => light.Id), Constants.Groups.LivingRoom, RoomClass.LivingRoom);
             Console.WriteLine();
 
             return true;
@@ -49,7 +56,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
             var lights = newLights.ToDictionary(light => light.Id);
 
             var groupLights = new List<Light>();
-            ConsoleKeyInfo keepScanning;
+            var keepScanning = new ConsoleKeyInfo('y', ConsoleKey.Y, true, false, false);
 
             do
             {
@@ -62,9 +69,12 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
                 var lightId = Console.ReadLine();
 
                 if (!lights.ContainsKey(lightId))
+                {
                     Console.WriteLine("Invalid input");
-                else
-                    groupLights.Add(lights[lightId]);
+                    continue;
+                }
+
+                groupLights.Add(lights[lightId]);
 
                 await _hueClient.SendCommandAsync(new LightCommand { Alert = Alert.Multiple }, new[] { lightId });
 

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
@@ -16,18 +18,18 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
     public class AutomationSetupActionStep4CreateRulesTests
     {
         private readonly Mock<IHueClient> _hueClient;
-        private readonly Mock<ILogger<AutomationSetupActionStep4CreateRules>> _logger;
+        private readonly Mock<ILogger<ActionStep4CreateRules>> _logger;
         private readonly Mock<ISettingsProvider> _settingsProvider;
 
-        private readonly AutomationSetupActionStep4CreateRules _target;
+        private readonly ActionStep4CreateRules _target;
 
         public AutomationSetupActionStep4CreateRulesTests()
         {
             _hueClient = new Mock<IHueClient>();
-            _logger = new Mock<ILogger<AutomationSetupActionStep4CreateRules>>();
+            _logger = new Mock<ILogger<ActionStep4CreateRules>>();
             _settingsProvider = new Mock<ISettingsProvider>();
 
-            _target = new AutomationSetupActionStep4CreateRules(
+            _target = new ActionStep4CreateRules(
                 _hueClient.Object,
                 _logger.Object,
                 _settingsProvider.Object);
@@ -46,6 +48,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
 
             var result = await _target.ExecuteStep(new WakeupModel
             {
+                WakeupTime = TimeSpan.ParseExact("0615", "hhmm", null, TimeSpanStyles.None),
                 Group = new Group(),
                 Lights = new List<Light> { new() },
                 TriggerSensor = new Sensor { Id = triggerSensorId },
@@ -69,7 +72,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
             Assert.Collection(
                 result.Rules.TransitionDown.Conditions,
                 _ => { },
-                condition => Assert.Equal($"PT00:{transitionUpMinutes + transitionDownDelayMinutes + 1}:00", condition.Value));
+                condition => Assert.Equal($"PT00:{transitionUpMinutes + transitionDownDelayMinutes}:00", condition.Value));
         }
     }
 }

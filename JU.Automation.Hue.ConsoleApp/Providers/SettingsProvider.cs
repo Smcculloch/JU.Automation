@@ -11,6 +11,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         int WakeupTransitionUpInMinutes { get; }
         int WakeupTransitionDownDelayInMinutes { get; }
         int WakeupTransitionDownInMinutes { get; }
+        int SunriseTransitionUpInMinutes { get; }
         void SetAppKey(string appKey);
     }
 
@@ -22,6 +23,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         private const string WakeupTransitionInMinutesKey = "Client:WakeupTransitionUpInMinutes";
         private const string WakeupTransitionDownDelayInMinutesKey = "Client:WakeupTransitionDownDelayInMinutes";
         private const string WakeupTransitionDownInMinutesKey = "Client:WakeupTransitionDownInMinutes";
+        private const string SunriseTransitionUpInMinutesKey = "Client:SunriseTransitionUpInMinutes";
 
         private string _appKey;
 
@@ -51,6 +53,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         public int WakeupTransitionUpInMinutes => _configuration.GetValue<int>(WakeupTransitionInMinutesKey);
         public int WakeupTransitionDownDelayInMinutes => _configuration.GetValue<int>(WakeupTransitionDownDelayInMinutesKey);
         public int WakeupTransitionDownInMinutes => _configuration.GetValue<int>(WakeupTransitionDownInMinutesKey);
+        public int SunriseTransitionUpInMinutes => _configuration.GetValue<int>(SunriseTransitionUpInMinutesKey);
 
         public void SetAppKey(string appKey)
         {

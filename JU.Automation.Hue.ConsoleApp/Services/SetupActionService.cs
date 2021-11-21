@@ -14,9 +14,16 @@ namespace JU.Automation.Hue.ConsoleApp.Services
     public interface ISetupActionService
     {
         Task NewDeveloper();
-        Task<bool> GetNewLights();
-        Task<bool> SearchNewLights();
+        Task<SearchResult> GetNewLights();
+        Task<SearchResult> SearchNewLights();
         Task<bool> RunInitialSetup();
+    }
+
+    public class SearchResult
+    {
+        public bool Success { get; set; }
+        public string[] Errors { get; set; }
+        public int LightsFound { get; set; }
     }
 
     public class SetupActionService : ISetupActionService
@@ -54,24 +61,40 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             _settingsProvider.SetAppKey(appKey);
         }
 
-        public async Task<bool> GetNewLights()
+        public async Task<SearchResult> GetNewLights()
         {
             var hueResults = await _hueClient.SearchNewLightsAsync();
             
-            if (!ValidateHueResults(hueResults))
-                return false;
+            if (!ValidateHueResults(hueResults, out string[] errors))
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = errors,
+                    LightsFound = 0
+                };
+            }
 
             var newLights = await ScanForNewLights();
 
-            if (newLights.Any())
-                return true;
+            if (newLights.Count < 3)
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = new[] { $"{newLights.Count} lights found; minimum of 3 required to continue" },
+                    LightsFound = newLights.Count
+                };
+            }
 
-            Console.WriteLine("No new lights found");
-            return false;
-
+            return new SearchResult
+            {
+                Success = true,
+                LightsFound = newLights.Count
+            };
         }
 
-        public async Task<bool> SearchNewLights()
+        public async Task<SearchResult> SearchNewLights()
         {
             IList<string> serialNumbers = new List<string>();
 
@@ -91,18 +114,34 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
             var hueResults = await _hueClient.SearchNewLightsAsync(serialNumbers);
 
-            if (!ValidateHueResults(hueResults))
-                return false;
+            if (!ValidateHueResults(hueResults, out string[] errors))
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = errors,
+                    LightsFound = 0
+                };
+            }
 
             var newLights = await ScanForNewLights();
 
-            if (newLights.Any())
-                return true;
+            if (newLights.Count < 3)
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = new[] { $"{newLights.Count} found; minimum of 3 required to continue" },
+                    LightsFound = newLights.Count
+                };
+            }
 
-            Console.WriteLine("No new lights found");
-            return false;
+            return new SearchResult
+            {
+                Success = true,
+                LightsFound = newLights.Count
+            };
         }
-
 
         public async Task<bool> RunInitialSetup()
         {
@@ -119,15 +158,11 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             return success;
         }
 
-        private bool ValidateHueResults(HueResults hueResults)
+        private bool ValidateHueResults(HueResults hueResults, out string[] errors)
         {
-            if (!hueResults.HasErrors())
-                return true;
+            errors = hueResults.Errors.Select(error => error.Error.Description).ToArray();
 
-            var errors = string.Join(Environment.NewLine,
-                hueResults.Errors.Select(error => error.Error.Description));
-            Console.WriteLine($"Search error(s):{Environment.NewLine}{errors}");
-            return false;
+            return !hueResults.HasErrors();
         }
 
         private async Task<IList<Light>> ScanForNewLights()

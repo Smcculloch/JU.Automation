@@ -8,14 +8,14 @@ using Q42.HueApi.Models.Sensors.CLIP;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep1CreateSensors : AutomationSetupActionStepBase<AutomationSetupActionStep1CreateSensors, WakeupModel>
+    public class ActionStep1CreateSensors : ActionStepBase<ActionStep1CreateSensors, WakeupModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
 
-        public AutomationSetupActionStep1CreateSensors(
+        public ActionStep1CreateSensors(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep1CreateSensors> logger,
+            ILogger<ActionStep1CreateSensors> logger,
             ISettingsProvider settingsProvider): base(logger)
         {
             _hueClient = hueClient;
@@ -26,6 +26,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.WakeupTime == TimeSpan.Zero)
+                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+
             if (model.Group == null)
                 throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
 
@@ -39,7 +42,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     On = true,
                     Reachable = true
                 },
-                Name = "Wake-up",
+                Name = "Wakeup",
                 Type = nameof(CLIPGenericFlag),
                 ModelId = "WAKEUP",
                 ManufacturerName = "Philips",

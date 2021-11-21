@@ -10,14 +10,14 @@ using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 {
-    public class AutomationSetupActionStep2CreateScenes : AutomationSetupActionStepBase<AutomationSetupActionStep2CreateScenes, WakeupModel>
+    public class ActionStep2CreateScenes : ActionStepBase<ActionStep2CreateScenes, WakeupModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
 
-        public AutomationSetupActionStep2CreateScenes(
+        public ActionStep2CreateScenes(
             IHueClient hueClient,
-            ILogger<AutomationSetupActionStep2CreateScenes> logger,
+            ILogger<ActionStep2CreateScenes> logger,
             ISettingsProvider settingsProvider) : base(logger)
         {
             _hueClient = hueClient;
@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.WakeupTime == TimeSpan.Zero)
+                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+
             if (model.Group == null)
                 throw new ArgumentNullException($"{model.Group} cannot be null");
 
@@ -49,7 +52,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         {
             var wakeup1InitScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1Init,
+                Name = Constants.Scenes.WakeupInit,
                 Lights = group.Lights,
                 Recycle = true
             };
@@ -85,7 +88,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         {
             var wakeup1TransitionUpScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1TransitionUp,
+                Name = Constants.Scenes.WakeupTransitionUp,
                 Lights = group.Lights,
                 Recycle = true
             };
@@ -110,6 +113,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                         Brightness = 255,
                         ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionUpInMinutes)
+                                                 .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds))
                     });
             }
 
@@ -122,7 +126,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         {
             var wakeup1TransitionDownScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1TurnOff,
+                Name = Constants.Scenes.WakeupTransitionDown,
                 Lights = group.Lights,
                 Recycle = true
             };
@@ -147,6 +151,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                         Brightness = 1,
                         ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionDownInMinutes)
+                                                 .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)),
                     });
             }
 
@@ -159,7 +164,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         {
             var wakeup1TurnOffScene = new Scene
             {
-                Name = Constants.Scenes.Wakeup1TurnOff,
+                Name = Constants.Scenes.WakeupTurnOff,
                 Lights = group.Lights,
                 Recycle = true
             };

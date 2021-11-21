@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Services;
 
 namespace JU.Automation.Hue.ConsoleApp
@@ -21,17 +23,20 @@ namespace JU.Automation.Hue.ConsoleApp
         private readonly IGenericActionService _genericActionService;
         private readonly IResetActionService _resetActionService;
         private readonly ISetupActionService _setupActionService;
+        private readonly IUserInputService _userInputService;
 
         public HueSetupCoordinator(
             IAutomationActionService automationActionService,
             IGenericActionService genericActionService,
             IResetActionService resetActionService,
-            ISetupActionService setupActionService)
+            ISetupActionService setupActionService,
+            IUserInputService userInputService)
         {
             _automationActionService = automationActionService;
             _genericActionService = genericActionService;
             _resetActionService = resetActionService;
             _setupActionService = setupActionService;
+            _userInputService = userInputService;
         }
 
         public async Task GetConfig() => await _genericActionService.ShowConfig();
@@ -42,7 +47,16 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task FullSetupAsync()
         {
-            await _setupActionService.GetNewLights();
+            var result = await _setupActionService.GetNewLights();
+
+            if (!result.Success)
+            {
+                Console.WriteLine($"Error(s) when searching for new lights:");
+                foreach (var error in result.Errors)
+                    Console.WriteLine(error);
+                Console.WriteLine($"Resolve errors and re-run setup to continue");
+                return;
+            }
 
             var success = await _setupActionService.RunInitialSetup();
 
@@ -52,7 +66,17 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task FullSetupAdvancedAsync()
         {
-            await _setupActionService.SearchNewLights();
+            var result = await _setupActionService.SearchNewLights();
+
+            if (!result.Success)
+            {
+                Console.WriteLine($"Error(s) when searching for new lights:");
+                foreach (var error in result.Errors)
+                    Console.WriteLine(error);
+                Console.WriteLine($"Resolve errors and re-run setup to continue");
+
+                return;
+            }
 
             var success = await _setupActionService.RunInitialSetup();
 
@@ -60,7 +84,14 @@ namespace JU.Automation.Hue.ConsoleApp
                 await CreateAutomationsAsync();
         }
 
-        public async Task CreateAutomationsAsync() => await _automationActionService.CreateBedroomWakeupAutomation();
+        public async Task CreateAutomationsAsync()
+        {
+            var wakeupTime = _userInputService.PromptWakeupTime();
+            var departureTime = _userInputService.PromptDepartureTime();
+
+            await _automationActionService.Wakeup(Constants.Groups.Bedroom, wakeupTime);
+            await _automationActionService.Sunrise(Constants.Groups.Kitchen, wakeupTime, departureTime);
+        }
 
         public async Task FullResetAsync() => await _resetActionService.FullReset();
 

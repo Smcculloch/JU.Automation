@@ -2,13 +2,13 @@
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
 {
-    public abstract class AutomationSetupActionStepBase<T, TModel>: IWakeupAutomationSetupAction<TModel>, IStep where TModel : class
+    public abstract class ActionStepBase<T, TModel>: ISunriseAutomationSetupAction<TModel>, IStep where TModel : BaseModel
     {
         private readonly ILogger<T> _logger;
 
-        protected AutomationSetupActionStepBase(ILogger<T> logger)
+        protected ActionStepBase(ILogger<T> logger)
         {
             _logger = logger;
         }
@@ -21,7 +21,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
         {
             var result = await ExecuteStep(model);
 
-            _logger.LogInformation($"Automation Setup {GetType().Name} (step {Step}) completed");
+            _logger.LogInformation($"Sunrise automation setup {GetType().Name} (step {Step}) completed");
 
             return result;
         }

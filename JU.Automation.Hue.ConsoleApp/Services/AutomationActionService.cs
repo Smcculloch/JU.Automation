@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -11,38 +13,71 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 {
     public interface IAutomationActionService
     {
-        Task<bool> CreateBedroomWakeupAutomation();
+        Task<bool> Wakeup(string groupName, TimeSpan wakeupTime);
+        Task<bool> Sunrise(string groupName, TimeSpan wakeupTime, TimeSpan departureTime);
     }
 
     public class AutomationActionService: IAutomationActionService
     {
         private readonly IHueClient _hueClient;
-        private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _automationSetupActions;
+        private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _wakeupAutomationSetupActions;
+        private readonly IEnumerable<IAutomationSetupAction<SunriseModel>> _sunriseAutomationSetupActions;
 
         public AutomationActionService(
             IHueClient hueClient,
-            IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions)
+            IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions,
+            IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions)
         {
             _hueClient = hueClient;
-            _automationSetupActions = wakeupAutomationSetupActions.Cast<IStep>()
-                                                                  .OrderBy(actionStep => actionStep.Step)
-                                                                  .Cast<IAutomationSetupAction<WakeupModel>>();
+
+            _wakeupAutomationSetupActions = wakeupAutomationSetupActions.Cast<IStep>()
+                                                                        .OrderBy(actionStep => actionStep.Step)
+                                                                        .Cast<IAutomationSetupAction<WakeupModel>>();
+
+            _sunriseAutomationSetupActions = sunriseAutomationSetupActions.Cast<IStep>()
+                                                                          .OrderBy(actionStep => actionStep.Step)
+                                                                          .Cast<IAutomationSetupAction<SunriseModel>>();
         }
 
-        public async Task<bool> CreateBedroomWakeupAutomation()
+        public async Task<bool> Wakeup(string groupName, TimeSpan wakeupTime)
         {
-            var bedroomGroup = await GetGroup(Constants.Groups.Bedroom);
-            var bedroomLights = await GetLights(bedroomGroup.Lights);
+            var group = await GetGroup(groupName);
+            var lights = await GetLights(group.Lights);
 
             var model = new WakeupModel
             {
-                Group = bedroomGroup,
-                Lights = bedroomLights
+                WakeupTime = wakeupTime,
+                Group = group,
+                Lights = lights
             };
 
-            foreach (var automationSetupAction in _automationSetupActions)
+            foreach (var action in _wakeupAutomationSetupActions)
             {
-                model = await automationSetupAction.Execute(model);
+                model = await action.Execute(model);
+
+                if (model == null)
+                    break;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> Sunrise(string groupName, TimeSpan wakeupTime, TimeSpan departureTime)
+        {
+            var group = await GetGroup(groupName);
+            var lights = await GetLights(group.Lights);
+
+            var model = new SunriseModel
+            {
+                WakeupTime = wakeupTime,
+                DepartureTime = departureTime,
+                Group = group,
+                Lights = lights
+            };
+
+            foreach (var action in _sunriseAutomationSetupActions)
+            {
+                model = await action.Execute(model);
 
                 if (model == null)
                     break;
