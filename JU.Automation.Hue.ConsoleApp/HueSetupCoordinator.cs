@@ -88,9 +88,11 @@ namespace JU.Automation.Hue.ConsoleApp
         {
             var wakeupTime = _userInputService.PromptWakeupTime();
             var departureTime = _userInputService.PromptDepartureTime();
+            var bedtime = _userInputService.PromptBedtime();
 
             await _automationActionService.Wakeup(Constants.Groups.Bedroom, wakeupTime);
             await _automationActionService.Sunrise(Constants.Groups.Kitchen, wakeupTime, departureTime);
+            await _automationActionService.Bedtime(Constants.Groups.LivingRoom, bedtime);
         }
 
         public async Task FullResetAsync() => await _resetActionService.FullReset();

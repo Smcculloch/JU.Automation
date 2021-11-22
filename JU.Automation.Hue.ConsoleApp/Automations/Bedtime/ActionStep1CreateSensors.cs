@@ -6,9 +6,9 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Sensors.CLIP;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
 {
-    public class ActionStep1CreateSensors : ActionStepBase<ActionStep1CreateSensors, WakeupModel>
+    public class ActionStep1CreateSensors : ActionStepBase<ActionStep1CreateSensors, BedtimeModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
@@ -24,10 +24,10 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override int Step => 1;
 
-        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
+        public override async Task<BedtimeModel> ExecuteStep(BedtimeModel model)
         {
-            if (model.WakeupTime == TimeSpan.Zero)
-                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+            if (model.BedtimeTime == TimeSpan.Zero)
+                throw new ArgumentException($"{nameof(model.BedtimeTime)} is invalid");
 
             if (model.Group == null)
                 throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
@@ -35,24 +35,24 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             if (model.Lights == null)
                 throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
 
-            var wakeupSensor = new Sensor
+            var bedtimeSensor = new Sensor
             {
                 Config = new SensorConfig
                 {
                     On = true,
                     Reachable = true
                 },
-                Name = "Wakeup",
+                Name = "Bedtime",
                 Type = nameof(CLIPGenericFlag),
-                ModelId = "WAKEUP",
+                ModelId = "BEDTIME",
                 ManufacturerName = "Philips",
                 SwVersion = "1.0",
                 UniqueId = $"{Guid.NewGuid():N}"
             };
 
-            var sensorId = await _hueClient.CreateSensorAsync(wakeupSensor);
+            var sensorId = await _hueClient.CreateSensorAsync(bedtimeSensor);
 
-            Console.WriteLine($"Sensor ({wakeupSensor.Name}) with id {sensorId} created");
+            Console.WriteLine($"Sensor ({bedtimeSensor.Name}) with id {sensorId} created");
 
             model.TriggerSensor = await _hueClient.GetSensorAsync(sensorId);
 

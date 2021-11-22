@@ -21,6 +21,12 @@
             public const string SunriseInit = "SunriseInit";
             public const string SunriseTransitionUp = "SunriseTransitionUp";
             public const string SunriseTurnOff = "SunriseTurnOff";
+
+            public const string BedtimeInit = "BedtimeInit";
+            public const string BedtimeTransitionUp = "BedtimeTransitionUp";
+            public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
+            public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
+            public const string BedtimeTurnOff = "BedtimeTurnOff";
         }
 
         public class Schedules
@@ -33,6 +39,12 @@
             public const string SunriseStart = "SunriseStart";
             public const string SunriseTransitionUp = "SunriseTransitionUp";
             public const string SunriseTurnOff = "SunriseTurnOff";
+
+            public const string BedtimeStart = "BedtimeStart";
+            public const string BedtimeTransitionUp = "BedtimeTransitionUp";
+            public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
+            public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
+            public const string BedtimeTurnOff = "BedtimeTurnOff";
         }
 
         public class Rules
@@ -43,6 +55,11 @@
 
             public const string SunriseTrigger = "SunriseTrigger";
             public const string SunriseTurnOff = "SunriseTurnOff";
+
+            public const string BedtimeTrigger = "BedtimeTrigger";
+            public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
+            public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
+            public const string BedtimeTurnOff = "BedtimeTurnOff";
         }
     }
 }

@@ -7,6 +7,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
     {
         TimeSpan PromptWakeupTime();
         TimeSpan PromptDepartureTime();
+        TimeSpan PromptBedtime();
     }
 
     public class UserInputService : IUserInputService
@@ -47,6 +48,25 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             } while (!TimeSpan.TryParseExact(departureTimeInput, "hhmm", null, TimeSpanStyles.None, out departureTime));
 
             return departureTime;
+        }
+
+        public TimeSpan PromptBedtime()
+        {
+            string bedtimeInput = null;
+            TimeSpan bedtime;
+
+            do
+            {
+                if (string.IsNullOrEmpty(bedtimeInput))
+                    Console.Write("Enter desired bedtime: [hhmm] (2230) ");
+                else
+                    Console.Write("Invalid, enter valid bedtime: [hhmm] (2230) ");
+
+                bedtimeInput = Console.ReadLine();
+
+            } while (!TimeSpan.TryParseExact(bedtimeInput, "hhmm", null, TimeSpanStyles.None, out bedtime));
+
+            return bedtime;
         }
     }
 }

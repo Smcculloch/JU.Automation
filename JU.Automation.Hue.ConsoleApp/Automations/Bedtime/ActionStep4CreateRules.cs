@@ -11,9 +11,9 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Groups;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
 {
-    public class ActionStep4CreateRules : ActionStepBase<ActionStep4CreateRules, WakeupModel>
+    public class ActionStep4CreateRules : ActionStepBase<ActionStep4CreateRules, BedtimeModel>
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
@@ -29,10 +29,10 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override int Step => 4;
 
-        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
+        public override async Task<BedtimeModel> ExecuteStep(BedtimeModel model)
         {
-            if (model.WakeupTime == TimeSpan.Zero)
-                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+            if (model.BedtimeTime == TimeSpan.Zero)
+                throw new ArgumentException($"{nameof(model.BedtimeTime)} is invalid");
 
             if (model.Group == null)
                 throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
@@ -44,16 +44,19 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 throw new ArgumentNullException($"{nameof(model.TriggerSensor)} cannot be null");
 
             if (model.Scenes?.Init == null || model.Scenes?.TransitionUp == null ||
-                model.Scenes?.TransitionDown == null || model.Scenes?.TurnOff == null)
+                model.Scenes?.TransitionDown1 == null || model.Scenes?.TransitionDown2 == null ||
+                model.Scenes?.TurnOff == null)
                 throw new ArgumentNullException($"One or more scenes are null");
 
             if (model.Schedules?.Start == null || model.Schedules?.TransitionUp == null ||
-                model.Schedules?.TransitionDown == null || model.Schedules?.TurnOff == null)
+                model.Schedules?.TransitionDown1 == null || model.Schedules?.TransitionDown2 == null ||
+                model.Schedules?.TurnOff == null)
                 throw new ArgumentNullException($"One or more schedules are null");
 
             model.Rules.Trigger = await CreateTriggerRule(model.Group, model.TriggerSensor, model.Scenes.Init,
                 model.Schedules.TransitionUp);
-            model.Rules.TransitionDown = await CreateTranstionDownRule(model.TriggerSensor, model.Schedules.TransitionDown);
+            model.Rules.TransitionDown1 = await CreateTranstionDown1Rule(model.TriggerSensor, model.Schedules.TransitionDown1);
+            model.Rules.TransitionDown2 = await CreateTranstionDown2Rule(model.TriggerSensor, model.Schedules.TransitionDown2);
             model.Rules.TurnOff = await CreateTurnOffRule(model.TriggerSensor, model.Schedules.TurnOff);
 
             return model;
@@ -61,9 +64,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         private async Task<Rule> CreateTriggerRule(Group group, Sensor triggerSensor, Scene initScene, Schedule transitionUpSchedule)
         {
-            var wakeupTriggerRule = new Rule
+            var bedtimeTriggerRule = new Rule
             {
-                Name = Constants.Rules.WakeupTrigger,
+                Name = Constants.Rules.BedtimeTrigger,
                 Conditions = new List<RuleCondition>
                 {
                     new()
@@ -94,22 +97,20 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 }
             };
 
-            var wakeupTriggerRuleId = await _hueClient.CreateRule(wakeupTriggerRule);
+            var bedtimeTriggerRuleId = await _hueClient.CreateRule(bedtimeTriggerRule);
 
-            Console.WriteLine($"Rule {wakeupTriggerRule.Name} with id {wakeupTriggerRuleId} created");
+            Console.WriteLine($"Rule {bedtimeTriggerRule.Name} with id {bedtimeTriggerRuleId} created");
 
-            return await _hueClient.GetRuleAsync(wakeupTriggerRuleId);
+            return await _hueClient.GetRuleAsync(bedtimeTriggerRuleId);
         }
 
-        private async Task<Rule> CreateTranstionDownRule(Sensor triggerSensor, Schedule transitionDownSchedule)
+        private async Task<Rule> CreateTranstionDown1Rule(Sensor triggerSensor, Schedule transitionDown1Schedule)
         {
-            var transitionDownDelay = TimeSpan.FromMinutes(
-                _settingsProvider.WakeupTransitionUpInMinutes +
-                _settingsProvider.WakeupTransitionDownDelayInMinutes);
+            var transitionDown1Delay = TimeSpan.FromMinutes(_settingsProvider.BedtimeTransitionDown1DelayInMinutes);
 
-            var wakeupTransitionDownRule = new Rule
+            var bedtimeTransitionDown1Rule = new Rule
             {
-                Name = Constants.Rules.WakeupTransitionDown,
+                Name = Constants.Rules.BedtimeTransitionDown1,
                 Conditions = new List<RuleCondition>
                 {
                     new()
@@ -122,14 +123,14 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     {
                         Address = $"/sensors/{triggerSensor.Id}/state/flag",
                         Operator = RuleOperator.Ddx,
-                        Value = new HueDateTime { TimerTime = transitionDownDelay }.JsonSerialize() ?? string.Empty
+                        Value = new HueDateTime { TimerTime = transitionDown1Delay }.JsonSerialize() ?? string.Empty
                     }
                 },
                 Actions = new List<InternalBridgeCommand>
                 {
                     new()
                     {
-                        Address = $"/schedules/{transitionDownSchedule.Id}",
+                        Address = $"/schedules/{transitionDown1Schedule.Id}",
                         Method = HttpMethod.Put,
                         Body = new GenericScheduleCommand(
                             new Schedule { Status = ScheduleStatus.Enabled }.JsonSerialize() ?? string.Empty)
@@ -137,25 +138,65 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 }
             };
 
-            var wakeupTransitionDownRuleId = await _hueClient.CreateRule(wakeupTransitionDownRule);
+            var bedtimeTransitionDown1RuleId = await _hueClient.CreateRule(bedtimeTransitionDown1Rule);
 
-            Console.WriteLine($"Rule {wakeupTransitionDownRule.Name} with id {wakeupTransitionDownRuleId} created");
+            Console.WriteLine($"Rule {bedtimeTransitionDown1Rule.Name} with id {bedtimeTransitionDown1RuleId} created");
 
-            wakeupTransitionDownRule.Id = wakeupTransitionDownRuleId;
+            bedtimeTransitionDown1Rule.Id = bedtimeTransitionDown1RuleId;
 
-            return wakeupTransitionDownRule;
+            return bedtimeTransitionDown1Rule;
+        }
+
+        private async Task<Rule> CreateTranstionDown2Rule(Sensor triggerSensor, Schedule transitionDown1Schedule)
+        {
+            var transitionDown2Delay = TimeSpan.FromMinutes(_settingsProvider.BedtimeTransitionDown2DelayInMinutes);
+
+            var bedtimeTransitionDown2Rule = new Rule
+            {
+                Name = Constants.Rules.BedtimeTransitionDown2,
+                Conditions = new List<RuleCondition>
+                {
+                    new()
+                    {
+                        Address = $"/sensors/{triggerSensor.Id}/state/flag",
+                        Operator = RuleOperator.Equal,
+                        Value = "true"
+                    },
+                    new()
+                    {
+                        Address = $"/sensors/{triggerSensor.Id}/state/flag",
+                        Operator = RuleOperator.Ddx,
+                        Value = new HueDateTime { TimerTime = transitionDown2Delay }.JsonSerialize() ?? string.Empty
+                    }
+                },
+                Actions = new List<InternalBridgeCommand>
+                {
+                    new()
+                    {
+                        Address = $"/schedules/{transitionDown1Schedule.Id}",
+                        Method = HttpMethod.Put,
+                        Body = new GenericScheduleCommand(
+                            new Schedule { Status = ScheduleStatus.Enabled }.JsonSerialize() ?? string.Empty)
+                    }
+                }
+            };
+
+            var bedtimeTransitionDown2RuleId = await _hueClient.CreateRule(bedtimeTransitionDown2Rule);
+
+            Console.WriteLine($"Rule {bedtimeTransitionDown2Rule.Name} with id {bedtimeTransitionDown2RuleId} created");
+
+            bedtimeTransitionDown2Rule.Id = bedtimeTransitionDown2RuleId;
+
+            return bedtimeTransitionDown2Rule;
         }
 
         private async Task<Rule> CreateTurnOffRule(Sensor triggerSensor, Schedule turnOffSchedule)
         {
-            var turnOffDelay = TimeSpan.FromMinutes(
-                _settingsProvider.WakeupTransitionUpInMinutes + 
-                _settingsProvider.WakeupTransitionDownDelayInMinutes + 
-                _settingsProvider.WakeupTransitionDownInMinutes);
+            var turnOffDelay = TimeSpan.FromMinutes(_settingsProvider.EveningLightsOnInMinutesBeforeBedtime);
 
-            var wakeupTurnOffRule = new Rule
+            var bedtimeTurnOffRule = new Rule
             {
-                Name = Constants.Rules.WakeupTurnOff,
+                Name = Constants.Rules.BedtimeTurnOff,
                 Conditions = new List<RuleCondition>
                 {
                     new()
@@ -192,13 +233,13 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 }
             };
 
-            var wakeupTurnOffRuleId = await _hueClient.CreateRule(wakeupTurnOffRule);
+            var bedtimeTurnOffRuleId = await _hueClient.CreateRule(bedtimeTurnOffRule);
 
-            Console.WriteLine($"Rule {wakeupTurnOffRule.Name} with id {wakeupTurnOffRuleId} created");
+            Console.WriteLine($"Rule {bedtimeTurnOffRule.Name} with id {bedtimeTurnOffRuleId} created");
 
-            wakeupTurnOffRule.Id = wakeupTurnOffRuleId;
+            bedtimeTurnOffRule.Id = bedtimeTurnOffRuleId;
 
-            return wakeupTurnOffRule;
+            return bedtimeTurnOffRule;
         }
     }
 }

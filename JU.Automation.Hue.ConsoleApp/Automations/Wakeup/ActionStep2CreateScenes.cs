@@ -50,26 +50,26 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         private async Task<Scene> CreateInitScene(Group group)
         {
-            var wakeup1InitScene = new Scene
+            var wakeupInitScene = new Scene
             {
                 Name = Constants.Scenes.WakeupInit,
                 Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1InitSceneId = await _hueClient.CreateSceneAsync(wakeup1InitScene);
+            var wakeupInitSceneId = await _hueClient.CreateSceneAsync(wakeupInitScene);
 
-            wakeup1InitScene = await _hueClient.GetSceneAsync(wakeup1InitSceneId);
+            wakeupInitScene = await _hueClient.GetSceneAsync(wakeupInitSceneId);
 
-            wakeup1InitScene.Type = SceneType.GroupScene;
-            wakeup1InitScene.Group = group.Id;
+            wakeupInitScene.Type = SceneType.GroupScene;
+            wakeupInitScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1InitSceneId, wakeup1InitScene);
+            await _hueClient.UpdateSceneAsync(wakeupInitSceneId, wakeupInitScene);
 
             foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1InitSceneId,
+                    wakeupInitSceneId,
                     lightId,
                     new LightCommand
                     {
@@ -79,33 +79,33 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1InitScene.Name}) with id {wakeup1InitSceneId} created");
+            Console.WriteLine($"Scene ({wakeupInitScene.Name}) with id {wakeupInitSceneId} created");
 
-            return await _hueClient.GetSceneAsync(wakeup1InitSceneId);
+            return await _hueClient.GetSceneAsync(wakeupInitSceneId);
         }
 
         private async Task<Scene> CreateTransitionUpScene(Group group)
         {
-            var wakeup1TransitionUpScene = new Scene
+            var wakeupTransitionUpScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTransitionUp,
                 Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1TransitionUpSceneId = await _hueClient.CreateSceneAsync(wakeup1TransitionUpScene);
+            var wakeupTransitionUpSceneId = await _hueClient.CreateSceneAsync(wakeupTransitionUpScene);
 
-            wakeup1TransitionUpScene = await _hueClient.GetSceneAsync(wakeup1TransitionUpSceneId);
+            wakeupTransitionUpScene = await _hueClient.GetSceneAsync(wakeupTransitionUpSceneId);
 
-            wakeup1TransitionUpScene.Type = SceneType.GroupScene;
-            wakeup1TransitionUpScene.Group = group.Id;
+            wakeupTransitionUpScene.Type = SceneType.GroupScene;
+            wakeupTransitionUpScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1TransitionUpSceneId, wakeup1TransitionUpScene);
+            await _hueClient.UpdateSceneAsync(wakeupTransitionUpSceneId, wakeupTransitionUpScene);
 
             foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1TransitionUpSceneId,
+                    wakeupTransitionUpSceneId,
                     lightId,
                     new LightCommand
                     {
@@ -117,33 +117,33 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1TransitionUpScene.Name}) with id {wakeup1TransitionUpSceneId} created");
+            Console.WriteLine($"Scene ({wakeupTransitionUpScene.Name}) with id {wakeupTransitionUpSceneId} created");
 
-            return await _hueClient.GetSceneAsync(wakeup1TransitionUpSceneId);
+            return await _hueClient.GetSceneAsync(wakeupTransitionUpSceneId);
         }
 
         private async Task<Scene> CreateTransitionDownScene(Group group)
         {
-            var wakeup1TransitionDownScene = new Scene
+            var wakeupTransitionDownScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTransitionDown,
                 Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1TransitionDownSceneId = await _hueClient.CreateSceneAsync(wakeup1TransitionDownScene);
+            var wakeupTransitionDownSceneId = await _hueClient.CreateSceneAsync(wakeupTransitionDownScene);
 
-            wakeup1TransitionDownScene = await _hueClient.GetSceneAsync(wakeup1TransitionDownSceneId);
+            wakeupTransitionDownScene = await _hueClient.GetSceneAsync(wakeupTransitionDownSceneId);
 
-            wakeup1TransitionDownScene.Type = SceneType.GroupScene;
-            wakeup1TransitionDownScene.Group = group.Id;
+            wakeupTransitionDownScene.Type = SceneType.GroupScene;
+            wakeupTransitionDownScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1TransitionDownSceneId, wakeup1TransitionDownScene);
+            await _hueClient.UpdateSceneAsync(wakeupTransitionDownSceneId, wakeupTransitionDownScene);
 
             foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1TransitionDownSceneId,
+                    wakeupTransitionDownSceneId,
                     lightId,
                     new LightCommand
                     {
@@ -155,33 +155,33 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1TransitionDownScene.Name}) with id {wakeup1TransitionDownSceneId} created");
+            Console.WriteLine($"Scene ({wakeupTransitionDownScene.Name}) with id {wakeupTransitionDownSceneId} created");
 
-            return await _hueClient.GetSceneAsync(wakeup1TransitionDownSceneId);
+            return await _hueClient.GetSceneAsync(wakeupTransitionDownSceneId);
         }
 
         private async Task<Scene> CreateTurnOffScene(Group group)
         {
-            var wakeup1TurnOffScene = new Scene
+            var wakeupTurnOffScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTurnOff,
                 Lights = group.Lights,
                 Recycle = true
             };
 
-            var wakeup1TurnOffSceneId = await _hueClient.CreateSceneAsync(wakeup1TurnOffScene);
+            var wakeupTurnOffSceneId = await _hueClient.CreateSceneAsync(wakeupTurnOffScene);
 
-            wakeup1TurnOffScene = await _hueClient.GetSceneAsync(wakeup1TurnOffSceneId);
+            wakeupTurnOffScene = await _hueClient.GetSceneAsync(wakeupTurnOffSceneId);
 
-            wakeup1TurnOffScene.Type = SceneType.GroupScene;
-            wakeup1TurnOffScene.Group = group.Id;
+            wakeupTurnOffScene.Type = SceneType.GroupScene;
+            wakeupTurnOffScene.Group = group.Id;
 
-            await _hueClient.UpdateSceneAsync(wakeup1TurnOffSceneId, wakeup1TurnOffScene);
+            await _hueClient.UpdateSceneAsync(wakeupTurnOffSceneId, wakeupTurnOffScene);
 
             foreach (var lightId in group.Lights)
             {
                 await _hueClient.ModifySceneAsync(
-                    wakeup1TurnOffSceneId,
+                    wakeupTurnOffSceneId,
                     lightId,
                     new LightCommand
                     {
@@ -190,9 +190,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     });
             }
 
-            Console.WriteLine($"Scene ({wakeup1TurnOffScene.Name}) with id {wakeup1TurnOffSceneId} created");
+            Console.WriteLine($"Scene ({wakeupTurnOffScene.Name}) with id {wakeupTurnOffSceneId} created");
 
-            return await _hueClient.GetSceneAsync(wakeup1TurnOffSceneId);
+            return await _hueClient.GetSceneAsync(wakeupTurnOffSceneId);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Automations.Bedtime;
 using JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
 using Q42.HueApi;
@@ -15,6 +16,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
     {
         Task<bool> Wakeup(string groupName, TimeSpan wakeupTime);
         Task<bool> Sunrise(string groupName, TimeSpan wakeupTime, TimeSpan departureTime);
+        Task<bool> Bedtime(string groupName, TimeSpan bedtime);
     }
 
     public class AutomationActionService: IAutomationActionService
@@ -22,11 +24,13 @@ namespace JU.Automation.Hue.ConsoleApp.Services
         private readonly IHueClient _hueClient;
         private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _wakeupAutomationSetupActions;
         private readonly IEnumerable<IAutomationSetupAction<SunriseModel>> _sunriseAutomationSetupActions;
+        private readonly IEnumerable<IAutomationSetupAction<BedtimeModel>> _bedtimeAutomationSetupActions;
 
         public AutomationActionService(
             IHueClient hueClient,
             IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions,
-            IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions)
+            IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions,
+            IEnumerable<IBedtimeAutomationSetupAction<BedtimeModel>> bedtimeAutomationSetupActions)
         {
             _hueClient = hueClient;
 
@@ -37,6 +41,10 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             _sunriseAutomationSetupActions = sunriseAutomationSetupActions.Cast<IStep>()
                                                                           .OrderBy(actionStep => actionStep.Step)
                                                                           .Cast<IAutomationSetupAction<SunriseModel>>();
+
+            _bedtimeAutomationSetupActions = bedtimeAutomationSetupActions.Cast<IStep>()
+                                                                          .OrderBy(actionStep => actionStep.Step)
+                                                                          .Cast<IAutomationSetupAction<BedtimeModel>>();
         }
 
         public async Task<bool> Wakeup(string groupName, TimeSpan wakeupTime)
@@ -76,6 +84,29 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             };
 
             foreach (var action in _sunriseAutomationSetupActions)
+            {
+                model = await action.Execute(model);
+
+                if (model == null)
+                    break;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> Bedtime(string groupName, TimeSpan bedtime)
+        {
+            var group = await GetGroup(groupName);
+            var lights = await GetLights(group.Lights);
+
+            var model = new BedtimeModel
+            {
+                BedtimeTime = bedtime,
+                Group = group,
+                Lights = lights
+            };
+
+            foreach (var action in _bedtimeAutomationSetupActions)
             {
                 model = await action.Execute(model);
 
