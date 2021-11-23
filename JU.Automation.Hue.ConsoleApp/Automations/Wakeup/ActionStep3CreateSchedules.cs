@@ -87,7 +87,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             return await _hueClient.GetScheduleAsync(wakeupTriggerScheduleId);
         }
 
-        private async Task<Schedule> CreateTransitionUpSchedule(Scene wakeupScene)
+        private async Task<Schedule> CreateTransitionUpSchedule(Scene transitionUpScene)
         {
             var wakeupTransitionUpSchedule = new Schedule
             {
@@ -97,7 +97,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
                     Body = new SceneCommand
                     {
-                        Scene = wakeupScene.Id
+                        Scene = transitionUpScene.Id
                     },
                     Method = HttpMethod.Put
                 },

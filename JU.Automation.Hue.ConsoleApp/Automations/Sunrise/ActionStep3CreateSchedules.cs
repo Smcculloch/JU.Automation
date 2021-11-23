@@ -86,7 +86,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             return await _hueClient.GetScheduleAsync(sunriseTriggerScheduleId);
         }
 
-        private async Task<Schedule> CreateTransitionUpSchedule(Scene sunriseScene)
+        private async Task<Schedule> CreateTransitionUpSchedule(Scene transitionUpScene)
         {
             var sunriseTransitionUpSchedule = new Schedule
             {
@@ -96,7 +96,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
                     Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
                     Body = new SceneCommand
                     {
-                        Scene = sunriseScene.Id
+                        Scene = transitionUpScene.Id
                     },
                     Method = HttpMethod.Put
                 },

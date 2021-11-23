@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Extensions;
-using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -16,15 +15,12 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
     public class ActionStep4CreateRules : ActionStepBase<ActionStep4CreateRules, SunriseModel>
     {
         private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
 
         public ActionStep4CreateRules(
             IHueClient hueClient,
-            ILogger<ActionStep4CreateRules> logger,
-            ISettingsProvider settingsProvider): base(logger)
+            ILogger<ActionStep4CreateRules> logger): base(logger)
         {
             _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 4;
