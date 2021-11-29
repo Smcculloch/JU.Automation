@@ -8,7 +8,7 @@ using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models.Groups;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
+namespace JU.Automation.Hue.ConsoleApp.Actions.Initial
 {
     public class SetupActionStep2GroupLights : SetupActionStepBase<SetupActionStep2GroupLights>
     {
@@ -16,7 +16,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 
         public SetupActionStep2GroupLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep2GroupLights> logger): base(logger)
+            ILogger<SetupActionStep2GroupLights> logger) : base(logger)
         {
             _hueClient = hueClient;
         }

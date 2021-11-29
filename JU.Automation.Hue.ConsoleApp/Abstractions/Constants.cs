@@ -11,6 +11,11 @@
             public const string LivingRoom = "LivingRoom";
         }
 
+        public class Switches
+        {
+            public const string AllOff = "AllOffDimmerSwitch";
+        }
+
         public class Scenes
         {
             public const string WakeupInit = "WakeupInit";
@@ -27,6 +32,8 @@
             public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
             public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
             public const string BedtimeTurnOff = "BedtimeTurnOff";
+
+            public const string AllOff = "AllOff";
         }
 
         public class Schedules

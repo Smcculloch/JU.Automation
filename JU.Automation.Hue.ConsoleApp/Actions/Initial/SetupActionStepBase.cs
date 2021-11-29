@@ -2,9 +2,9 @@
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
+namespace JU.Automation.Hue.ConsoleApp.Actions.Initial
 {
-    public abstract class SetupActionStepBase<T>: ISetupAction, IStep
+    public abstract class SetupActionStepBase<T> : IInitialSetupAction, IStep
     {
         private readonly ILogger<T> _logger;
 

@@ -36,6 +36,11 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
         public async Task ResetAutomations()
         {
+            var resourceLinks = await _hueClient.GetResourceLinksAsync();
+            foreach (var resourceLink in resourceLinks)
+                await _hueClient.DeleteResourceLinkAsync(resourceLink.Id);
+            Console.WriteLine($"Deleted {resourceLinks.Count} resourceLinks");
+
             var rules = await _hueClient.GetRulesAsync();
             foreach (var rule in rules)
                 await _hueClient.DeleteRule(rule.Id);

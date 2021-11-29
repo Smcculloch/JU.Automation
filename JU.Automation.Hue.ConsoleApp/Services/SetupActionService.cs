@@ -7,6 +7,7 @@ using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
+using Q42.HueApi.Models;
 using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
@@ -16,6 +17,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
         Task NewDeveloper();
         Task<SearchResult> GetNewLights();
         Task<SearchResult> SearchNewLights();
+        Task<SearchResult> FindNewSensors();
         Task<bool> RunInitialSetup();
     }
 
@@ -24,24 +26,26 @@ namespace JU.Automation.Hue.ConsoleApp.Services
         public bool Success { get; set; }
         public string[] Errors { get; set; }
         public int LightsFound { get; set; }
+        public int SensorsFound { get; set; }
     }
 
     public class SetupActionService : ISetupActionService
     {
         private readonly IHueClient _hueClient;
         private readonly ISettingsProvider _settingsProvider;
-        private readonly IEnumerable<ISetupAction> _setupActions;
+        private readonly IEnumerable<ISetupAction> _initialSetupActions;
 
         public SetupActionService(
             IHueClient hueClient,
             ISettingsProvider settingsProvider,
-            IEnumerable<ISetupAction> setupActions)
+            IEnumerable<IInitialSetupAction> initialSetupActions)
         {
             _hueClient = hueClient;
             _settingsProvider = settingsProvider;
-            _setupActions = setupActions.Cast<IStep>()
-                                        .OrderBy(actionStep => actionStep.Step)
-                                        .Cast<ISetupAction>();
+
+            _initialSetupActions = initialSetupActions.Cast<IStep>()
+                                                      .OrderBy(actionStep => actionStep.Step)
+                                                      .Cast<ISetupAction>();
         }
 
         public async Task NewDeveloper()
@@ -143,11 +147,43 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             };
         }
 
-        public async Task<bool> RunInitialSetup()
+        public async Task<SearchResult> FindNewSensors()
         {
+            var hueResults = await _hueClient.FindNewSensorsAsync();
+
+            if (!ValidateHueResults(hueResults, out string[] errors))
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = errors,
+                    SensorsFound = 0
+                };
+            }
+
+            var newSensors = await ScanForNewSensors();
+
+            if (newSensors.Count == 0)
+            {
+                return new SearchResult
+                {
+                    Success = false,
+                    Errors = new[] { $"{newSensors.Count} sensors found" },
+                    SensorsFound = newSensors.Count
+                };
+            }
+
+            return new SearchResult
+            {
+                Success = true,
+                LightsFound = newSensors.Count
+            };
+        }
+
+        public async Task<bool> RunInitialSetup(){
             var success = true;
 
-            foreach (var setupAction in _setupActions)
+            foreach (var setupAction in _initialSetupActions)
             {
                 success = await setupAction.Execute();
 
@@ -182,6 +218,25 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             } while (continueScanning.Value.Key == ConsoleKey.Y);
 
             return newLights;
+        }
+
+        private async Task<IList<Sensor>> ScanForNewSensors()
+        {
+            IList<Sensor> newSensors;
+
+            ConsoleKeyInfo? continueScanning;
+            do
+            {
+                newSensors = (await _hueClient.GetNewSensorsAsync()).ToList();
+                Thread.Sleep(2000);
+
+                Console.Write($"{newSensors.Count} new sensor(s) found. Continue scanning? (Y/N) ");
+                continueScanning = Console.ReadKey();
+                Console.WriteLine();
+
+            } while (continueScanning.Value.Key == ConsoleKey.Y);
+
+            return newSensors;
         }
     }
 }

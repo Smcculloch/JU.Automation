@@ -6,4 +6,6 @@ namespace JU.Automation.Hue.ConsoleApp.Abstractions
     {
         Task<bool> Execute();
     }
+
+    public interface IInitialSetupAction : ISetupAction { }
 }

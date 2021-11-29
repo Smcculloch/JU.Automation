@@ -61,6 +61,10 @@ namespace JU.Automation.Hue.ConsoleApp
                         Console.WriteLine($"Running automation(s) reset{Environment.NewLine}");
                         await _hueSetupCoordinator.ResetAutomationsAsync();
                         break;
+                    case 10:
+                        Console.WriteLine($"Running sensor setup{Environment.NewLine}");
+                        await _hueSetupCoordinator.SensorSetupAsync();
+                        break;
                     default:
                         Console.WriteLine("Invalid menu selection");
                         break;
@@ -81,18 +85,19 @@ namespace JU.Automation.Hue.ConsoleApp
 
             Console.WriteLine($"Menu (Hue: {_settingsProvider.LocalHueClientIp})");
             Console.WriteLine($"{Environment.NewLine}--- Troubleshooting ---");
-            Console.WriteLine("(1) Show Config");
-            Console.WriteLine("(2) Identify lights");
+            Console.WriteLine(" (1) Show Config");
+            Console.WriteLine(" (2) Identify lights");
             Console.WriteLine($"{Environment.NewLine}--- Setup ---");
-            Console.WriteLine("(3) New Developer");
-            Console.WriteLine("(4) Full Setup");
-            Console.WriteLine("(5) Advanced Setup (using serial #'s)");
-            Console.WriteLine("(6) Full Reset");
+            Console.WriteLine(" (3) New Developer");
+            Console.WriteLine(" (4) Full Setup");
+            Console.WriteLine(" (5) Advanced Setup (using serial #'s)");
+            Console.WriteLine(" (6) Full Reset");
             Console.WriteLine($"{Environment.NewLine}--- Automation ---");
-            Console.WriteLine("(8) Automation(s) Setup");
-            Console.WriteLine("(9) Automation(s) Reset");
+            Console.WriteLine(" (8) Automation(s) Setup");
+            Console.WriteLine(" (9) Automation(s) Reset");
+            Console.WriteLine("(10) Sensor(s) Setup");
             Console.WriteLine($"{Environment.NewLine}---");
-            Console.WriteLine("(0) Exit");
+            Console.WriteLine(" (0) Exit");
             Console.Write($"{Environment.NewLine}Select: ");
 
             var input = Console.ReadLine();

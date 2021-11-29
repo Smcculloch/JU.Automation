@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
+using Microsoft.Extensions.Logging;
+using Q42.HueApi;
+using Q42.HueApi.Interfaces;
+using Q42.HueApi.Models;
+
+namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
+{
+    public class ActionStep2CreateScenes : ActionStepBase<ActionStep2CreateScenes, SwitchModel>
+    {
+        private readonly IHueClient _hueClient;
+
+        public ActionStep2CreateScenes(
+            IHueClient hueClient,
+            ILogger<ActionStep2CreateScenes> logger) : base(logger)
+        {
+            _hueClient = hueClient;
+        }
+
+        public override int Step => 2;
+
+        public override async Task<SwitchModel> ExecuteStep(SwitchModel model)
+        {
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{model.Lights} cannot be null");
+
+            if (model.TriggerSensor == null)
+                throw new ArgumentNullException($"{model.TriggerSensor} cannot be null");
+
+            model.Scenes.AllOff = await CreateAllOffScene(model.Lights);
+
+            return model;
+        }
+
+        private async Task<Scene> CreateAllOffScene(IList<Light> lights)
+        {
+            var allOffScene = new Scene
+            {
+                Name = Constants.Scenes.AllOff,
+                Lights = lights.Select(light => light.Id),
+                Recycle = true
+            };
+
+            var allOffSceneId = await _hueClient.CreateSceneAsync(allOffScene);
+
+            allOffScene = await _hueClient.GetSceneAsync(allOffSceneId);
+
+            allOffScene.Type = SceneType.GroupScene;
+
+            await _hueClient.UpdateSceneAsync(allOffSceneId, allOffScene);
+
+            foreach (var lightId in allOffScene.Lights)
+            {
+                await _hueClient.ModifySceneAsync(
+                    allOffSceneId,
+                    lightId,
+                    new LightCommand
+                    {
+                        On = false,
+                        Brightness = 1,
+                        ColorTemperature = 447,
+                    });
+            }
+
+            Console.WriteLine($"Scene ({allOffScene.Name}) with id {allOffSceneId} created");
+
+            return await _hueClient.GetSceneAsync(allOffSceneId);
+        }
+    }
+}

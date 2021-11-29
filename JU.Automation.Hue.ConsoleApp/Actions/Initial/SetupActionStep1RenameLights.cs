@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 
-namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
+namespace JU.Automation.Hue.ConsoleApp.Actions.Initial
 {
     public class SetupActionStep1RenameLights : SetupActionStepBase<SetupActionStep1RenameLights>
     {
@@ -12,7 +12,7 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Setup
 
         public SetupActionStep1RenameLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep1RenameLights> logger): base(logger)
+            ILogger<SetupActionStep1RenameLights> logger) : base(logger)
         {
             _hueClient = hueClient;
         }

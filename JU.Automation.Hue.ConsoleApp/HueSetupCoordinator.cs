@@ -12,6 +12,7 @@ namespace JU.Automation.Hue.ConsoleApp
         Task IdentifyLightsAsync();
         Task FullSetupAsync();
         Task FullSetupAdvancedAsync();
+        Task SensorSetupAsync();
         Task CreateAutomationsAsync();
         Task FullResetAsync();
         Task ResetAutomationsAsync();
@@ -98,5 +99,21 @@ namespace JU.Automation.Hue.ConsoleApp
         public async Task FullResetAsync() => await _resetActionService.FullReset();
 
         public async Task ResetAutomationsAsync() => await _resetActionService.ResetAutomations();
+
+        public async Task SensorSetupAsync()
+        {
+            var result = await _setupActionService.FindNewSensors();
+
+            if (!result.Success)
+            {
+                Console.WriteLine($"Error(s) when searching for new sensors:");
+                foreach (var error in result.Errors)
+                    Console.WriteLine(error);
+                Console.WriteLine($"Resolve errors and re-run setup to continue");
+                return;
+            }
+
+            await _automationActionService.AllOff();
+        }
     }
 }

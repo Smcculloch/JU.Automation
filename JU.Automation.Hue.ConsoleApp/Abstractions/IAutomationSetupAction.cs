@@ -17,6 +17,8 @@ namespace JU.Automation.Hue.ConsoleApp.Abstractions
 
     public interface IBedtimeAutomationSetupAction<TModel> : IAutomationSetupAction<TModel> where TModel : BaseModel { }
 
+    public interface IAllOffAutomationSetupAction<TModel> : IAutomationSetupAction<TModel> where TModel : BaseModel { }
+
     public abstract class BaseModel
     {
         public Group Group { get; set; }
