@@ -55,7 +55,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             {
                 Name = "Wakeup",
                 Description = "JU Wakeup Automation",
-                ClassId = 1,
+                ClassId = 10,
                 Links =
                 {
                     $"/sensors/{sensor.Id}",

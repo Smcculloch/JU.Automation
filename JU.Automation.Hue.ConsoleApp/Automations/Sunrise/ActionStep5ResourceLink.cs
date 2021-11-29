@@ -56,7 +56,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             {
                 Name = "Sunrise",
                 Description = "JU Sunrise Automation",
-                ClassId = 1,
+                ClassId = 10,
                 Links =
                 {
                     $"/sensors/{sensor.Id}",

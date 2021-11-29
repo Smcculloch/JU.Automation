@@ -66,9 +66,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
                     });
             }
 
+            allOffScene = await _hueClient.GetSceneAsync(allOffSceneId);
+
             Console.WriteLine($"Scene ({allOffScene.Name}) with id {allOffSceneId} created");
 
-            return await _hueClient.GetSceneAsync(allOffSceneId);
+            return allOffScene;
         }
     }
 }

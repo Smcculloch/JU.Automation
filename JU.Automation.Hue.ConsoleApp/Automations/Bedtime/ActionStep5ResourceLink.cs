@@ -58,7 +58,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             {
                 Name = "Bedtime",
                 Description = "JU Bedtime Automation",
-                ClassId = 2,
+                ClassId = 20,
                 Links =
                 {
                     $"/sensors/{sensor.Id}",
