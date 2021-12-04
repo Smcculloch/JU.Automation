@@ -149,6 +149,20 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
         public async Task<SearchResult> FindNewSensors()
         {
+            var allSensors = await _hueClient.GetSensorsAsync();
+            var allOffSensor = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.Switches.AllOff);
+
+            if (allOffSensor != null)
+            {
+                Console.WriteLine($"Switch sensor {Constants.Switches.AllOff} already exists");
+
+                return new SearchResult
+                {
+                    Success = true,
+                    SensorsFound = 1
+                };
+            }    
+
             var hueResults = await _hueClient.FindNewSensorsAsync();
 
             if (!ValidateHueResults(hueResults, out string[] errors))
@@ -180,7 +194,8 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             };
         }
 
-        public async Task<bool> RunInitialSetup(){
+        public async Task<bool> RunInitialSetup()
+        {
             var success = true;
 
             foreach (var setupAction in _initialSetupActions)

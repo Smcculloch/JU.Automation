@@ -16,6 +16,13 @@
             public const string AllOff = "AllOffDimmerSwitch";
         }
 
+        public class VirtualSensors
+        {
+            public const string Wakeup = "Wakeup";
+            public const string Sunrise = "Sunrise";
+            public const string Bedtime = "Bedtime";
+        }
+
         public class Scenes
         {
             public const string WakeupInit = "WakeupInit";
@@ -33,7 +40,7 @@
             public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
             public const string BedtimeTurnOff = "BedtimeTurnOff";
 
-            public const string AllOff = "AllOff";
+            public const string AllOff = "SceneAllOff";
         }
 
         public class Schedules
@@ -67,6 +74,8 @@
             public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
             public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";
             public const string BedtimeTurnOff = "BedtimeTurnOff";
+
+            public const string AllOff = "SwitchAllOff";
         }
     }
 }

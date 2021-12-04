@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
@@ -10,6 +11,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
         Task ResetSetup();
         Task ResetAutomations();
         Task FullReset();
+        Task ResetSwitch();
     }
 
     public class ResetActionService: IResetActionService
@@ -66,6 +68,36 @@ namespace JU.Automation.Hue.ConsoleApp.Services
         {
             await ResetAutomations();
             await ResetSetup();
+        }
+
+        public async Task ResetSwitch()
+        {
+            var rules = await _hueClient.GetRulesAsync();
+            var allOffRule = rules.SingleOrDefault(rule => rule.Name == Constants.Rules.AllOff);
+
+            if (allOffRule != null)
+            {
+                await _hueClient.DeleteRule(allOffRule.Id);
+                Console.WriteLine($"Deleted rule {allOffRule.Name}");
+            }
+
+            var scenes = await _hueClient.GetScenesAsync();
+            var allOffScene = scenes.SingleOrDefault(scene => scene.Name == Constants.Scenes.AllOff);
+
+            if (allOffScene != null)
+            {
+                await _hueClient.DeleteSceneAsync(allOffScene.Id);
+                Console.WriteLine($"Deleted scene {allOffScene.Name}");
+            }
+
+            var sensors = await _hueClient.GetSensorsAsync();
+            var allOffSensor = sensors.SingleOrDefault(sensor => sensor.Name == Constants.Switches.AllOff);
+
+            if (allOffSensor != null)
+            {
+                await _hueClient.DeleteSensorAsync(allOffSensor.Id);
+                Console.WriteLine($"Deleted sensor {allOffSensor.Name}");
+            }
         }
     }
 }

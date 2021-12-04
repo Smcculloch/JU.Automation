@@ -67,6 +67,9 @@ namespace JU.Automation.Hue.ConsoleApp
                        services.AddTransient<IBedtimeAutomationSetupAction<Automations.Bedtime.BedtimeModel>, Automations.Bedtime.ActionStep5ResourceLink>();
 
                        services.AddTransient<IAllOffAutomationSetupAction<Automations.AllOff.SwitchModel>, Automations.AllOff.ActionStep1RenameSensor>();
+                       services.AddTransient<IAllOffAutomationSetupAction<Automations.AllOff.SwitchModel>, Automations.AllOff.ActionStep2CreateScenes>();
+                       services.AddTransient<IAllOffAutomationSetupAction<Automations.AllOff.SwitchModel>, Automations.AllOff.ActionStep3CreateRules>();
+                       services.AddTransient<IAllOffAutomationSetupAction<Automations.AllOff.SwitchModel>, Automations.AllOff.ActionStep4ResourceLink>();
 
                        services.AddTransient<IAutomationActionService, AutomationActionService>();
                        services.AddTransient<IGenericActionService, GenericActionService>();

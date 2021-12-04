@@ -131,6 +131,12 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             {
                 Lights = (await _hueClient.GetLightsAsync()).ToList()
             };
+
+            var allSensors = await _hueClient.GetSensorsAsync();
+
+            model.VirtualSensors.Wakeup = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Wakeup);
+            model.VirtualSensors.Sunrise = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Sunrise);
+            model.VirtualSensors.Bedtime = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Bedtime);
         
             foreach (var action in _allOffAutomationSetupActions)
             {
@@ -143,7 +149,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             return true;
         }
 
-private async Task<Group> GetGroup(string groupName)
+        private async Task<Group> GetGroup(string groupName)
         {
             var groups = await _hueClient.GetGroupsAsync();
 

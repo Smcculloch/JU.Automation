@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi.Interfaces;
@@ -42,7 +43,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     On = true,
                     Reachable = true
                 },
-                Name = "Wakeup",
+                Name = Constants.VirtualSensors.Wakeup,
                 Type = nameof(CLIPGenericFlag),
                 ModelId = "WAKEUP",
                 ManufacturerName = "Philips",

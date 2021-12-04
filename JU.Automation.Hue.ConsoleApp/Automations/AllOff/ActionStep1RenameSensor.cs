@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi.Interfaces;
+using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
 {
@@ -22,15 +23,34 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
 
         public override async Task<SwitchModel> ExecuteStep(SwitchModel model)
         {
+            if (model.Lights == null)
+                throw new ArgumentNullException($"{model.Lights} cannot be null");
+
+            if (model.VirtualSensors?.Wakeup == null || model.VirtualSensors?.Sunrise == null || model.VirtualSensors?.Bedtime == null)
+                throw new ArgumentNullException($"One or more virtual sensors are null");
+
             var newSensors = await _hueClient.GetNewSensorsAsync();
 
-            var sensor = newSensors.FirstOrDefault();
+            Sensor allOffSensor;
 
-            await _hueClient.UpdateSensorAsync(sensor.Id, Constants.Switches.AllOff);
+            if (newSensors.Count == 1)
+            {
+                allOffSensor = newSensors.FirstOrDefault();
 
-            Console.WriteLine($"Sensor ({sensor.Name}) name updated");
+                await _hueClient.UpdateSensorAsync(allOffSensor.Id, Constants.Switches.AllOff);
 
-            model.TriggerSensor = sensor;
+                allOffSensor = await _hueClient.GetSensorAsync(allOffSensor?.Id);
+
+                Console.WriteLine($"Sensor ({allOffSensor.Name}) name updated");
+            }
+            else
+            {
+                var allSensors = await _hueClient.GetSensorsAsync();
+
+                allOffSensor = allSensors.FirstOrDefault(sensor => sensor.Name == Constants.Switches.AllOff);
+            }
+
+            model.TriggerSensor = allOffSensor;
 
             return model;
         }

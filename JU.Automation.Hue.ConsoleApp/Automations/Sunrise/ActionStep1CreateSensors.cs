@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi.Interfaces;
@@ -45,7 +46,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
                     On = true,
                     Reachable = true
                 },
-                Name = "Sunrise",
+                Name = Constants.VirtualSensors.Sunrise,
                 Type = nameof(CLIPGenericFlag),
                 ModelId = "SUNRISE",
                 ManufacturerName = "Philips",

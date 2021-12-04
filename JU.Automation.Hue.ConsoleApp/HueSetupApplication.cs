@@ -63,7 +63,11 @@ namespace JU.Automation.Hue.ConsoleApp
                         break;
                     case 10:
                         Console.WriteLine($"Running sensor setup{Environment.NewLine}");
-                        await _hueSetupCoordinator.SensorSetupAsync();
+                        await _hueSetupCoordinator.SwitchSetupAsync();
+                        break;
+                    case 11:
+                        Console.WriteLine($"Running switch reset{Environment.NewLine}");
+                        await _hueSetupCoordinator.SwitchResetAsync();
                         break;
                     default:
                         Console.WriteLine("Invalid menu selection");
@@ -96,6 +100,7 @@ namespace JU.Automation.Hue.ConsoleApp
             Console.WriteLine(" (8) Automation(s) Setup");
             Console.WriteLine(" (9) Automation(s) Reset");
             Console.WriteLine("(10) Sensor(s) Setup");
+            Console.WriteLine("(11) Sensor(s) Reset");
             Console.WriteLine($"{Environment.NewLine}---");
             Console.WriteLine(" (0) Exit");
             Console.Write($"{Environment.NewLine}Select: ");

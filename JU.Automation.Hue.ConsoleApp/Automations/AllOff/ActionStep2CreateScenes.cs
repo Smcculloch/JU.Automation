@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
             if (model.Lights == null)
                 throw new ArgumentNullException($"{model.Lights} cannot be null");
 
+            if (model.VirtualSensors?.Wakeup == null || model.VirtualSensors?.Sunrise == null || model.VirtualSensors?.Bedtime == null)
+                throw new ArgumentNullException($"One or more virtual sensors are null");
+
             if (model.TriggerSensor == null)
                 throw new ArgumentNullException($"{model.TriggerSensor} cannot be null");
 

@@ -12,10 +12,11 @@ namespace JU.Automation.Hue.ConsoleApp
         Task IdentifyLightsAsync();
         Task FullSetupAsync();
         Task FullSetupAdvancedAsync();
-        Task SensorSetupAsync();
         Task CreateAutomationsAsync();
         Task FullResetAsync();
         Task ResetAutomationsAsync();
+        Task SwitchSetupAsync();
+        Task SwitchResetAsync();
     }
 
     public class HueSetupCoordinator : IHueSetupCoordinator
@@ -100,7 +101,7 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task ResetAutomationsAsync() => await _resetActionService.ResetAutomations();
 
-        public async Task SensorSetupAsync()
+        public async Task SwitchSetupAsync()
         {
             var result = await _setupActionService.FindNewSensors();
 
@@ -115,5 +116,7 @@ namespace JU.Automation.Hue.ConsoleApp
 
             await _automationActionService.AllOff();
         }
+
+        public async Task SwitchResetAsync() => await _resetActionService.ResetSwitch();
     }
 }
