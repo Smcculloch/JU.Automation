@@ -50,6 +50,9 @@ Generated\ Files/
 TestResult.xml
 nunit-*.xml
 
+# Visual Studio Code
+/.vscode
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
@@ -155,6 +158,7 @@ coverage*.info
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
+*.ncrunch*
 
 # MightyMoose
 *.mm.*
