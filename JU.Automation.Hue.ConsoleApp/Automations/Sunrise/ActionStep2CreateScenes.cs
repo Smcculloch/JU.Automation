@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
 
         public override async Task<SunriseModel> ExecuteStep(SunriseModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.WakeupTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
 
@@ -55,18 +58,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             var sunriseInitScene = new Scene
             {
                 Name = Constants.Scenes.SunriseInit,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var sunriseInitSceneId = await _hueClient.CreateSceneAsync(sunriseInitScene);
-
-            sunriseInitScene = await _hueClient.GetSceneAsync(sunriseInitSceneId);
-
-            sunriseInitScene.Type = SceneType.GroupScene;
-            sunriseInitScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(sunriseInitSceneId, sunriseInitScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -91,18 +87,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             var sunriseTransitionUpScene = new Scene
             {
                 Name = Constants.Scenes.SunriseTransitionUp,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var sunriseTransitionUpSceneId = await _hueClient.CreateSceneAsync(sunriseTransitionUpScene);
-
-            sunriseTransitionUpScene = await _hueClient.GetSceneAsync(sunriseTransitionUpSceneId);
-
-            sunriseTransitionUpScene.Type = SceneType.GroupScene;
-            sunriseTransitionUpScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(sunriseTransitionUpSceneId, sunriseTransitionUpScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -113,7 +102,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
                     {
                         On = true,
                         Brightness = 255,
-                        ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.SunriseTransitionUpInMinutes)
                                                  .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds))
                     });
@@ -129,18 +117,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             var sunriseTurnOffScene = new Scene
             {
                 Name = Constants.Scenes.SunriseTurnOff,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var sunriseTurnOffSceneId = await _hueClient.CreateSceneAsync(sunriseTurnOffScene);
-
-            sunriseTurnOffScene = await _hueClient.GetSceneAsync(sunriseTurnOffSceneId);
-
-            sunriseTurnOffScene.Type = SceneType.GroupScene;
-            sunriseTurnOffScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(sunriseTurnOffSceneId, sunriseTurnOffScene);
 
             foreach (var lightId in group.Lights)
             {

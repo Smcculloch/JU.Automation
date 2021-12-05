@@ -44,17 +44,12 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
             var allOffScene = new Scene
             {
                 Name = Constants.Scenes.AllOff,
+                Type = SceneType.LightScene,
                 Lights = lights.Select(light => light.Id),
                 Recycle = true
             };
 
             var allOffSceneId = await _hueClient.CreateSceneAsync(allOffScene);
-
-            allOffScene = await _hueClient.GetSceneAsync(allOffSceneId);
-
-            allOffScene.Type = SceneType.GroupScene;
-
-            await _hueClient.UpdateSceneAsync(allOffSceneId, allOffScene);
 
             foreach (var lightId in allOffScene.Lights)
             {

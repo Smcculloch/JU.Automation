@@ -21,6 +21,7 @@ namespace JU.Automation.Hue.ConsoleApp.Abstractions
 
     public abstract class BaseModel
     {
+        public RecurringDay RecurringDay { get; set; }
         public Group Group { get; set; }
         public IList<Light> Lights { get; set; }
         public Sensor TriggerSensor { get; set; }

@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
 
         public override async Task<SunriseModel> ExecuteStep(SunriseModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.WakeupTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
 
@@ -46,14 +49,14 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
             if (model.Scenes?.Init == null || model.Scenes?.TransitionUp == null || model.Scenes?.TurnOff == null)
                 throw new ArgumentNullException($"One or more scenes are null");
 
-            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor, model.WakeupTime);
+            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor, model.RecurringDay, model.WakeupTime);
             model.Schedules.TransitionUp = await CreateTransitionUpSchedule(model.Scenes.TransitionUp);
             model.Schedules.TurnOff = await CreateTurnOffSchedule(model.Scenes.TurnOff);
 
             return model;
         }
 
-        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor, TimeSpan startTime)
+        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor, RecurringDay recurringDay, TimeSpan startTime)
         {
             var sunriseTriggerSchedule = new Schedule
             {
@@ -69,7 +72,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
                 },
                 LocalTime = new HueDateTime
                 {
-                    RecurringDay = RecurringDay.RecurringWeekdays | RecurringDay.RecurringWeekend,
+                    RecurringDay = recurringDay,
                     TimerTime = startTime
                 },
                 Status = ScheduleStatus.Enabled

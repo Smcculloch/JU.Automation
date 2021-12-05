@@ -27,6 +27,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
 
         public override async Task<BedtimeModel> ExecuteStep(BedtimeModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.BedtimeTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.BedtimeTime)} is invalid");
 

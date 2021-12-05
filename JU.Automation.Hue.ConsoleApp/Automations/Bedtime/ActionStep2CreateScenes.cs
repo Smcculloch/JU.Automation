@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
 
         public override async Task<BedtimeModel> ExecuteStep(BedtimeModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.BedtimeTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.BedtimeTime)} is invalid");
 
@@ -54,18 +57,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             var bedtimeInitScene = new Scene
             {
                 Name = Constants.Scenes.BedtimeInit,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var bedtimeInitSceneId = await _hueClient.CreateSceneAsync(bedtimeInitScene);
-
-            bedtimeInitScene = await _hueClient.GetSceneAsync(bedtimeInitSceneId);
-
-            bedtimeInitScene.Type = SceneType.GroupScene;
-            bedtimeInitScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(bedtimeInitSceneId, bedtimeInitScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -76,7 +72,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                     {
                         On = true,
                         Brightness = 1,
-                        ColorTemperature = 447,
+                        ColorTemperature = 447
                     });
             }
 
@@ -90,18 +86,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             var bedtimeTransitionUpScene = new Scene
             {
                 Name = Constants.Scenes.BedtimeTransitionUp,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var bedtimeTransitionUpSceneId = await _hueClient.CreateSceneAsync(bedtimeTransitionUpScene);
-
-            bedtimeTransitionUpScene = await _hueClient.GetSceneAsync(bedtimeTransitionUpSceneId);
-
-            bedtimeTransitionUpScene.Type = SceneType.GroupScene;
-            bedtimeTransitionUpScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(bedtimeTransitionUpSceneId, bedtimeTransitionUpScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -112,7 +101,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                     {
                         On = true,
                         Brightness = 255,
-                        ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.EveningLightsOnTransitionUpInMinutes)
                                                  .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds))
                     });
@@ -128,18 +116,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             var bedtimeTransitionDown1Scene = new Scene
             {
                 Name = Constants.Scenes.BedtimeTransitionDown1,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var bedtimeTransitionDown1SceneId = await _hueClient.CreateSceneAsync(bedtimeTransitionDown1Scene);
-
-            bedtimeTransitionDown1Scene = await _hueClient.GetSceneAsync(bedtimeTransitionDown1SceneId);
-
-            bedtimeTransitionDown1Scene.Type = SceneType.GroupScene;
-            bedtimeTransitionDown1Scene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(bedtimeTransitionDown1SceneId, bedtimeTransitionDown1Scene);
 
             foreach (var lightId in group.Lights)
             {
@@ -150,7 +131,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                     {
                         On = true,
                         Brightness = 85,
-                        ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.BedtimeTransitionDown1InMinutes)
                                                  .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)),
                     });
@@ -166,18 +146,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             var bedtimeTransitionDown2Scene = new Scene
             {
                 Name = Constants.Scenes.BedtimeTransitionDown2,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var bedtimeTransitionDown2SceneId = await _hueClient.CreateSceneAsync(bedtimeTransitionDown2Scene);
-
-            bedtimeTransitionDown2Scene = await _hueClient.GetSceneAsync(bedtimeTransitionDown2SceneId);
-
-            bedtimeTransitionDown2Scene.Type = SceneType.GroupScene;
-            bedtimeTransitionDown2Scene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(bedtimeTransitionDown2SceneId, bedtimeTransitionDown2Scene);
 
             foreach (var lightId in group.Lights)
             {
@@ -188,7 +161,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                     {
                         On = true,
                         Brightness = 1,
-                        ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.BedtimeTransitionDown2InMinutes)
                                                  .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)),
                     });
@@ -204,18 +176,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             var bedtimeTurnOffScene = new Scene
             {
                 Name = Constants.Scenes.BedtimeTurnOff,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var bedtimeTurnOffSceneId = await _hueClient.CreateSceneAsync(bedtimeTurnOffScene);
-
-            bedtimeTurnOffScene = await _hueClient.GetSceneAsync(bedtimeTurnOffSceneId);
-
-            bedtimeTurnOffScene.Type = SceneType.GroupScene;
-            bedtimeTurnOffScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(bedtimeTurnOffSceneId, bedtimeTurnOffScene);
 
             foreach (var lightId in group.Lights)
             {

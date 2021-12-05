@@ -27,6 +27,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
 
         public override async Task<SunriseModel> ExecuteStep(SunriseModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.WakeupTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
 

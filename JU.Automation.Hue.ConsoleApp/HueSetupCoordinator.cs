@@ -88,13 +88,14 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task CreateAutomationsAsync()
         {
+            var recurringDay = _userInputService.PromptSchedule();
             var wakeupTime = _userInputService.PromptWakeupTime();
             var departureTime = _userInputService.PromptDepartureTime();
             var bedtime = _userInputService.PromptBedtime();
 
-            await _automationActionService.Wakeup(Constants.Groups.Bedroom, wakeupTime);
-            await _automationActionService.Sunrise(Constants.Groups.Kitchen, wakeupTime, departureTime);
-            await _automationActionService.Bedtime(Constants.Groups.LivingRoom, bedtime);
+            await _automationActionService.Wakeup(Constants.Groups.Bedroom, recurringDay, wakeupTime);
+            await _automationActionService.Sunrise(Constants.Groups.Kitchen, recurringDay, wakeupTime, departureTime);
+            await _automationActionService.Bedtime(Constants.Groups.LivingRoom, recurringDay, bedtime);
         }
 
         public async Task FullResetAsync() => await _resetActionService.FullReset();

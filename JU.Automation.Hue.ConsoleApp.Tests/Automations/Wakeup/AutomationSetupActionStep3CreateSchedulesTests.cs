@@ -69,6 +69,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
 
             var result = await _target.ExecuteStep(new WakeupModel
             {
+                RecurringDay = RecurringDay.RecurringAlldays,
                 WakeupTime = TimeSpan.ParseExact("0615", "hhmm", null, TimeSpanStyles.None),
                 Group = new Group(),
                 Lights = new List<Light> { new() },

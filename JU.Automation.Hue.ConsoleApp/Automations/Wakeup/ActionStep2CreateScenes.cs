@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.WakeupTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
 
@@ -53,18 +56,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             var wakeupInitScene = new Scene
             {
                 Name = Constants.Scenes.WakeupInit,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var wakeupInitSceneId = await _hueClient.CreateSceneAsync(wakeupInitScene);
-
-            wakeupInitScene = await _hueClient.GetSceneAsync(wakeupInitSceneId);
-
-            wakeupInitScene.Type = SceneType.GroupScene;
-            wakeupInitScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(wakeupInitSceneId, wakeupInitScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -89,18 +85,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             var wakeupTransitionUpScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTransitionUp,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var wakeupTransitionUpSceneId = await _hueClient.CreateSceneAsync(wakeupTransitionUpScene);
-
-            wakeupTransitionUpScene = await _hueClient.GetSceneAsync(wakeupTransitionUpSceneId);
-
-            wakeupTransitionUpScene.Type = SceneType.GroupScene;
-            wakeupTransitionUpScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(wakeupTransitionUpSceneId, wakeupTransitionUpScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -111,7 +100,6 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     {
                         On = true,
                         Brightness = 255,
-                        ColorTemperature = 447,
                         TransitionTime = TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionUpInMinutes)
                                                  .Subtract(TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds))
                     });
@@ -127,18 +115,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             var wakeupTransitionDownScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTransitionDown,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var wakeupTransitionDownSceneId = await _hueClient.CreateSceneAsync(wakeupTransitionDownScene);
-
-            wakeupTransitionDownScene = await _hueClient.GetSceneAsync(wakeupTransitionDownSceneId);
-
-            wakeupTransitionDownScene.Type = SceneType.GroupScene;
-            wakeupTransitionDownScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(wakeupTransitionDownSceneId, wakeupTransitionDownScene);
 
             foreach (var lightId in group.Lights)
             {
@@ -165,18 +146,11 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             var wakeupTurnOffScene = new Scene
             {
                 Name = Constants.Scenes.WakeupTurnOff,
-                Lights = group.Lights,
-                Recycle = true
+                Type = SceneType.GroupScene,
+                Group = group.Id
             };
 
             var wakeupTurnOffSceneId = await _hueClient.CreateSceneAsync(wakeupTurnOffScene);
-
-            wakeupTurnOffScene = await _hueClient.GetSceneAsync(wakeupTurnOffSceneId);
-
-            wakeupTurnOffScene.Type = SceneType.GroupScene;
-            wakeupTurnOffScene.Group = group.Id;
-
-            await _hueClient.UpdateSceneAsync(wakeupTurnOffSceneId, wakeupTurnOffScene);
 
             foreach (var lightId in group.Lights)
             {

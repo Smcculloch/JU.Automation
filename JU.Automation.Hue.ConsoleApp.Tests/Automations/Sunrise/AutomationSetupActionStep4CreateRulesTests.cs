@@ -41,6 +41,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Sunrise
 
             var result = await _target.ExecuteStep(new SunriseModel
             {
+                RecurringDay = RecurringDay.RecurringAlldays,
                 WakeupTime = wakeupTime,
                 DepartureTime = departureTime,
                 Group = new Group(),

@@ -9,15 +9,16 @@ using JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
+using Q42.HueApi.Models;
 using Q42.HueApi.Models.Groups;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
 {
     public interface IAutomationActionService
     {
-        Task<bool> Wakeup(string groupName, TimeSpan wakeupTime);
-        Task<bool> Sunrise(string groupName, TimeSpan wakeupTime, TimeSpan departureTime);
-        Task<bool> Bedtime(string groupName, TimeSpan bedtime);
+        Task<bool> Wakeup(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime);
+        Task<bool> Sunrise(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime, TimeSpan departureTime);
+        Task<bool> Bedtime(string groupName, RecurringDay recurringDay, TimeSpan bedtime);
         Task<bool> AllOff();
     }
 
@@ -55,71 +56,98 @@ namespace JU.Automation.Hue.ConsoleApp.Services
                                                                         .Cast<IAutomationSetupAction<SwitchModel>>();
         }
 
-        public async Task<bool> Wakeup(string groupName, TimeSpan wakeupTime)
+        public async Task<bool> Wakeup(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime)
         {
             var group = await GetGroup(groupName);
             var lights = await GetLights(group.Lights);
 
             var model = new WakeupModel
             {
+                RecurringDay = recurringDay,
                 WakeupTime = wakeupTime,
                 Group = group,
                 Lights = lights
             };
 
-            foreach (var action in _wakeupAutomationSetupActions)
+            try
             {
-                model = await action.Execute(model);
+                foreach (var action in _wakeupAutomationSetupActions)
+                {
+                    model = await action.Execute(model);
 
-                if (model == null)
-                    break;
+                    if (model == null)
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
             }
 
             return true;
         }
 
-        public async Task<bool> Sunrise(string groupName, TimeSpan wakeupTime, TimeSpan departureTime)
+        public async Task<bool> Sunrise(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime, TimeSpan departureTime)
         {
             var group = await GetGroup(groupName);
             var lights = await GetLights(group.Lights);
 
             var model = new SunriseModel
             {
+                RecurringDay = recurringDay,
                 WakeupTime = wakeupTime,
                 DepartureTime = departureTime,
                 Group = group,
                 Lights = lights
             };
 
-            foreach (var action in _sunriseAutomationSetupActions)
+            try
             {
-                model = await action.Execute(model);
+                foreach (var action in _sunriseAutomationSetupActions)
+                {
+                    model = await action.Execute(model);
 
-                if (model == null)
-                    break;
+                    if (model == null)
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
             }
 
             return true;
         }
 
-        public async Task<bool> Bedtime(string groupName, TimeSpan bedtime)
+        public async Task<bool> Bedtime(string groupName, RecurringDay recurringDay, TimeSpan bedtime)
         {
             var group = await GetGroup(groupName);
             var lights = await GetLights(group.Lights);
 
             var model = new BedtimeModel
             {
+                RecurringDay = recurringDay,
                 BedtimeTime = bedtime,
                 Group = group,
                 Lights = lights
             };
 
-            foreach (var action in _bedtimeAutomationSetupActions)
+            try
             {
-                model = await action.Execute(model);
+                foreach (var action in _bedtimeAutomationSetupActions)
+                {
+                    model = await action.Execute(model);
 
-                if (model == null)
-                    break;
+                    if (model == null)
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
             }
 
             return true;

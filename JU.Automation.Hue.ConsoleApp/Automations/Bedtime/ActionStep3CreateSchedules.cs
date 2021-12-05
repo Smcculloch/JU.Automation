@@ -28,6 +28,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
 
         public override async Task<BedtimeModel> ExecuteStep(BedtimeModel model)
         {
+            if (model.RecurringDay == default)
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.BedtimeTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.BedtimeTime)} is invalid");
 
@@ -45,7 +48,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                 model.Scenes?.TurnOff == null)
                 throw new ArgumentNullException($"One or more scenes are null");
 
-            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor, model.BedtimeTime);
+            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor, model.RecurringDay, model.BedtimeTime);
             model.Schedules.TransitionUp = await CreateTransitionUpSchedule(model.Scenes.TransitionUp);
             model.Schedules.TransitionDown1 = await CreateTransitionDown1Schedule(model.Scenes.TransitionDown1);
             model.Schedules.TransitionDown2 = await CreateTransitionDown2Schedule(model.Scenes.TransitionDown2);
@@ -54,7 +57,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
             return model;
         }
 
-        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor, TimeSpan bedtime)
+        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor, RecurringDay recurringDay, TimeSpan bedtime)
         {
             var startTime = bedtime.Subtract(TimeSpan.FromMinutes(_settingsProvider.EveningLightsOnInMinutesBeforeBedtime));
 
@@ -72,7 +75,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Bedtime
                 },
                 LocalTime = new HueDateTime
                 {
-                    RecurringDay = RecurringDay.RecurringWeekdays | RecurringDay.RecurringWeekend,
+                    RecurringDay = recurringDay,
                     TimerTime = startTime
                 },
                 Status = ScheduleStatus.Enabled

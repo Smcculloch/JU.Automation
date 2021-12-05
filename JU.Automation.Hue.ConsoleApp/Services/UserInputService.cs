@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Globalization;
+using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
 {
     public interface IUserInputService
     {
+        RecurringDay PromptSchedule();
         TimeSpan PromptWakeupTime();
         TimeSpan PromptDepartureTime();
         TimeSpan PromptBedtime();
@@ -12,6 +14,32 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
     public class UserInputService : IUserInputService
     {
+        public RecurringDay PromptSchedule()
+        {
+            string recurringDayInput = null;
+            var recurringDay = RecurringDay.RecurringNone;
+
+            do
+            {
+                if (string.IsNullOrEmpty(recurringDayInput))
+                    Console.Write(
+                        $"Enter desired automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W)) ");
+                else
+                    Console.Write(
+                        $"Invalid, enter valid automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W)) ");
+
+                recurringDayInput = Console.ReadLine();
+
+                if (recurringDayInput == "A" || recurringDayInput == "a")
+                    recurringDay = RecurringDay.RecurringAlldays;
+                else if (recurringDayInput == "W" || recurringDayInput == "w")
+                    recurringDay = RecurringDay.RecurringWeekdays;
+
+            } while (recurringDay == RecurringDay.RecurringNone);
+
+            return recurringDay;
+        }
+
         public TimeSpan PromptWakeupTime()
         {
             string wakeupTimeInput = null;

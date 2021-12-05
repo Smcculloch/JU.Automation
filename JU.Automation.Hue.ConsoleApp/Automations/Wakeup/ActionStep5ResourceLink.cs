@@ -21,6 +21,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.RecurringDay == default(RecurringDay))
+                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
             if (model.WakeupTime == TimeSpan.Zero)
                 throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
 

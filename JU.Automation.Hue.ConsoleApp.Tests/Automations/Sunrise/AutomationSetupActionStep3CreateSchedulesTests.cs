@@ -60,6 +60,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Sunrise
 
             var result = await _target.ExecuteStep(new SunriseModel
             {
+                RecurringDay = RecurringDay.RecurringAlldays,
                 WakeupTime = TimeSpan.ParseExact("0615", "hhmm", null, TimeSpanStyles.None),
                 DepartureTime = TimeSpan.ParseExact("0745", "hhmm", null, TimeSpanStyles.None),
                 Group = new Group(),
