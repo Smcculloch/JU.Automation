@@ -14,14 +14,31 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public ScopedBackgroundService(
             IServiceProvider serviceProvider,
-            ILogger<ScopedBackgroundService> logger) =>
+            ILogger<ScopedBackgroundService> logger)
+        {
             (_serviceProvider, _logger) = (serviceProvider, logger);
+        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation($"{nameof(ScopedBackgroundService)} is running.");
 
-            await DoWorkAsync(stoppingToken);
+            try
+            {
+                await DoWorkAsync(stoppingToken);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An unhandled exception occurred");
+
+                Console.WriteLine($"Error: {e.Message}");
+            }
+            finally
+            {
+                await StopAsync(stoppingToken);
+
+                Console.WriteLine("Press ctrl+c to exit");
+            }
         }
 
         private async Task DoWorkAsync(CancellationToken stoppingToken)

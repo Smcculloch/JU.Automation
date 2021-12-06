@@ -30,7 +30,7 @@ namespace JU.Automation.Hue.ConsoleApp
                    })
                    .ConfigureServices(services =>
                    {
-                       services.AddHostedService<ScopedBackgroundService>();
+                       services.AddHostedService<HueBackgroundService>();
                        services.AddScoped<HueSetupApplication>();
 
                        var configuration = new ConfigurationBuilder()
