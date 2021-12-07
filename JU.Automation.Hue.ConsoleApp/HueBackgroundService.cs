@@ -36,7 +36,7 @@ namespace JU.Automation.Hue.ConsoleApp
             {
                 await StopAsync(stoppingToken);
 
-                Console.WriteLine("Press ctrl+c to exit");
+                Console.WriteLine("Press Ctrl+C to exit");
             }
         }
 

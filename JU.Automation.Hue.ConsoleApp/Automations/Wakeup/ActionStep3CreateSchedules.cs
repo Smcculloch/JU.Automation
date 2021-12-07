@@ -76,10 +76,20 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                     RecurringDay = recurringDay,
                     TimerTime = startTime
                 },
-                Status = ScheduleStatus.Enabled
+                //Status = ScheduleStatus.Enabled
             };
 
-            var wakeupTriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeupTriggerSchedule);
+            string wakeupTriggerScheduleId;
+
+            try
+            {
+                wakeupTriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeupTriggerSchedule);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
             wakeupTriggerSchedule.AutoDelete = false;
 

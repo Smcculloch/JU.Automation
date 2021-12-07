@@ -7,7 +7,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
     {
         string LocalHueClientIp { get; }
         string AppKey { get; }
-        bool EnableDebug { get; }
+        bool DebugEnabled { get; }
         int WakeupTransitionUpInMinutes { get; }
         int WakeupTransitionDownDelayInMinutes { get; }
         int WakeupTransitionDownInMinutes { get; }
@@ -25,7 +25,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
     {
         private const string HueIpCommandLineArg = "hue-ip";
         private const string HueAppKeyCommandLineArg = "hue-appkey";
-        private const string EnableDebugCommandLineArg = "enable-debug";
+        private const string DebugCommandLineArg = "debug";
         private const string WakeupTransitionInMinutesKey = "Client:WakeupTransitionUpInMinutes";
         private const string WakeupTransitionDownDelayInMinutesKey = "Client:WakeupTransitionDownDelayInMinutes";
         private const string WakeupTransitionDownInMinutesKey = "Client:WakeupTransitionDownInMinutes";
@@ -61,7 +61,7 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
             }
         }
 
-        public bool EnableDebug => bool.Parse(_configuration[EnableDebugCommandLineArg] ?? bool.FalseString);
+        public bool DebugEnabled => bool.Parse(_configuration[DebugCommandLineArg] ?? bool.FalseString);
         public int WakeupTransitionUpInMinutes => _configuration.GetValue<int>(WakeupTransitionInMinutesKey);
         public int WakeupTransitionDownDelayInMinutes => _configuration.GetValue<int>(WakeupTransitionDownDelayInMinutesKey);
         public int WakeupTransitionDownInMinutes => _configuration.GetValue<int>(WakeupTransitionDownInMinutesKey);
