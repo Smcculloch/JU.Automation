@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -13,12 +14,15 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
     public class ActionStep2CreateScenes : ActionStepBase<ActionStep2CreateScenes, SwitchModel>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public ActionStep2CreateScenes(
             IHueClient hueClient,
-            ILogger<ActionStep2CreateScenes> logger) : base(logger)
+            ILogger<ActionStep2CreateScenes> logger,
+            ISettingsProvider settingsProvider) : base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 2;

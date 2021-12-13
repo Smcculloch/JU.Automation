@@ -10,7 +10,11 @@ namespace JU.Automation.Hue.ConsoleApp
     {
         public HueClient(
             ISettingsProvider settingsProvider,
-            HttpClient client) : base(settingsProvider.LocalHueClientIp, client) { }
+            HttpClient client) : base(settingsProvider.LocalHueClientIp, client)
+        {
+            if (!string.IsNullOrEmpty(settingsProvider.AppKey))
+                Initialize(settingsProvider.AppKey);
+        }
 
         public async Task<string> NewDeveloper(string appName, string deviceName)
         {

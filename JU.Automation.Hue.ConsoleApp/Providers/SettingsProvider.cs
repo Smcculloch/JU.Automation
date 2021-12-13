@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace JU.Automation.Hue.ConsoleApp.Providers
 {
@@ -73,12 +72,6 @@ namespace JU.Automation.Hue.ConsoleApp.Providers
         public int BedtimeTransitionDown2DelayInMinutes => _configuration.GetValue<int>(BedtimeTransitionDown2DelayInMinutesKey);
         public int BedtimeTransitionDown2InMinutes => _configuration.GetValue<int>(BedtimeTransitionDown2InMinutesKey);
 
-        public void SetAppKey(string appKey)
-        {
-            if (!string.IsNullOrEmpty(_appKey))
-                throw new ArgumentException("AppKey already set!");
-
-            _appKey = appKey;
-        }
+        public void SetAppKey(string appKey) => _appKey = appKey;
     }
 }

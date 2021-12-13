@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Q42.HueApi;
@@ -18,6 +19,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Sunrise
     {
         private readonly Mock<IHueClient> _hueClient;
         private readonly Mock<ILogger<ActionStep4CreateRules>> _logger;
+        private readonly Mock<ISettingsProvider> _settingsProvider;
 
         private readonly ActionStep4CreateRules _target;
 
@@ -25,10 +27,12 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Sunrise
         {
             _hueClient = new Mock<IHueClient>();
             _logger = new Mock<ILogger<ActionStep4CreateRules>>();
+            _settingsProvider = new Mock<ISettingsProvider>();
 
             _target = new ActionStep4CreateRules(
                 _hueClient.Object,
-                _logger.Object);
+                _logger.Object,
+                _settingsProvider.Object);
         }
 
         [Theory, AutoData]

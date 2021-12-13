@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Q42.HueApi.Interfaces;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
@@ -17,10 +18,14 @@ namespace JU.Automation.Hue.ConsoleApp.Services
     public class ResetActionService: IResetActionService
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
-        public ResetActionService(IHueClient hueClient)
+        public ResetActionService(
+            IHueClient hueClient,
+            ISettingsProvider settingsProvider)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public async Task ResetSetup()

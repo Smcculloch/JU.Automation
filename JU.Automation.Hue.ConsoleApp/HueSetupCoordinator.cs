@@ -7,7 +7,7 @@ namespace JU.Automation.Hue.ConsoleApp
 {
     public interface IHueSetupCoordinator
     {
-        Task GetConfig();
+        Task ShowCapabilities();
         Task CreateNewDeveloper();
         Task IdentifyLightsAsync();
         Task FullSetupAsync();
@@ -41,7 +41,7 @@ namespace JU.Automation.Hue.ConsoleApp
             _userInputService = userInputService;
         }
 
-        public async Task GetConfig() => await _genericActionService.ShowConfig();
+        public async Task ShowCapabilities() => await _genericActionService.ShowCapabilities();
 
         public async Task CreateNewDeveloper() => await _setupActionService.NewDeveloper();
 

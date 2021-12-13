@@ -46,8 +46,8 @@ namespace JU.Automation.Hue.ConsoleApp
                             Console.WriteLine("Invalid input");
                             break;
                         case 1:
-                            Console.WriteLine($"Running config request{Environment.NewLine}");
-                            await _hueSetupCoordinator.GetConfig();
+                            Console.WriteLine($"Running show capabilities request{Environment.NewLine}");
+                            await _hueSetupCoordinator.ShowCapabilities();
                             break;
                         case 2:
                             Console.WriteLine($"Running identify lights{Environment.NewLine}");
@@ -108,9 +108,9 @@ namespace JU.Automation.Hue.ConsoleApp
         {
             Console.Clear();
 
-            Console.WriteLine($"Menu (Hue: {_settingsProvider.LocalHueClientIp})");
+            Console.WriteLine($"Menu (HueIp: {_settingsProvider.LocalHueClientIp} AppKey: {_settingsProvider.AppKey})");
             Console.WriteLine($"{Environment.NewLine}--- Troubleshooting ---");
-            Console.WriteLine(" (1) Show Config");
+            Console.WriteLine(" (1) Show Capabilities");
             Console.WriteLine(" (2) Identify lights");
             Console.WriteLine($"{Environment.NewLine}--- Setup ---");
             Console.WriteLine(" (3) New Developer");

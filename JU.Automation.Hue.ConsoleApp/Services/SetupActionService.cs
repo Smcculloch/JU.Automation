@@ -62,8 +62,6 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             Console.Write("Press any key to continue ...");
             Console.ReadKey();
 
-            ((HueClient)_hueClient).Initialize(appKey);
-
             _settingsProvider.SetAppKey(appKey);
         }
 

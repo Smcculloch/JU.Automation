@@ -1,65 +1,73 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 
-namespace JU.Automation.Hue.ConsoleApp.Services
+namespace JU.Automation.Hue.ConsoleApp.Services;
+
+public interface IGenericActionService
 {
-    public interface IGenericActionService
+    Task ShowCapabilities();
+    Task IdentifyLights();
+}
+
+public class GenericActionService : IGenericActionService
+{
+    private readonly IBridgeLocator _bridgeLocator;
+    private readonly IHueClient _hueClient;
+    private readonly ISettingsProvider _settingsProvider;
+
+    public GenericActionService(
+        IBridgeLocator bridgeLocator,
+        IHueClient hueClient,
+        ISettingsProvider settingsProvider)
     {
-        Task ShowConfig();
-        Task IdentifyLights();
+        _bridgeLocator = bridgeLocator;
+        _hueClient = hueClient;
+        _settingsProvider = settingsProvider;
     }
 
-    public class GenericActionService: IGenericActionService
+    public async Task ShowCapabilities()
     {
-        private readonly IBridgeLocator _bridgeLocator;
-        private readonly IHueClient _hueClient;
+        var result = await _hueClient.GetCapabilitiesAsync();
 
-        public GenericActionService(
-            IBridgeLocator bridgeLocator,
-            IHueClient hueClient)
+        Console.WriteLine($"Available {nameof(result.Groups)} {result.Groups.Available} (total {result.Groups.Total})");
+        Console.WriteLine($"Available {nameof(result.Lights)} {result.Lights.Available} (total {result.Lights.Total})");
+        Console.WriteLine($"Available {nameof(result.Schedules)} {result.Scenes.Available} (total {result.Scenes.Total})");
+        Console.WriteLine($"Available {nameof(result.Schedules)} {result.Schedules.Available} (total {result.Schedules.Total})");
+        Console.WriteLine($"Available {nameof(result.Rules)} {result.Rules.Available} (total {result.Rules.Total})");
+        Console.WriteLine($"Available {nameof(result.Resourcelinks)} {result.Resourcelinks.Available} (total {result.Resourcelinks.Total})");
+        Console.WriteLine($"Available {nameof(result.Sensors)} {result.Sensors.Available} (total {result.Sensors.Total})");
+    }
+
+    public async Task IdentifyLights()
+    {
+        var groups = (await _hueClient.GetGroupsAsync()).ToDictionary(group => group.Id);
+
+        ConsoleKeyInfo continueIdentify;
+        do
         {
-            _bridgeLocator = bridgeLocator;
-            _hueClient = hueClient;
-        }
+            Console.WriteLine("Groups:");
+            foreach (var @group in groups.Values)
+                Console.WriteLine($"({group.Id}) {group.Name}");
+            Console.Write("Select group number (#): ");
+            var groupId = Console.ReadLine();
 
-        public async Task ShowConfig()
-        {
-            var locatedBridges = await _bridgeLocator.LocateBridgesAsync(TimeSpan.FromSeconds(5));
-
-            foreach (var locatedBridge in locatedBridges)
-                Console.WriteLine($"Discovered {locatedBridge.BridgeId} ({locatedBridge.IpAddress})");
-        }
-
-        public async Task IdentifyLights()
-        {
-            var groups = (await _hueClient.GetGroupsAsync()).ToDictionary(group => group.Id);
-
-            ConsoleKeyInfo continueIdentify;
-            do
-            {
-                Console.WriteLine("Groups:");
-                foreach (var @group in groups.Values)
-                    Console.WriteLine($"({group.Id}) {group.Name}");
-                Console.Write("Select group number (#): ");
-                var groupId = Console.ReadLine();
-
-                if (!groups.ContainsKey(groupId))
-                    Console.WriteLine("Invalid input");
-                else
-                    await _hueClient.SendCommandAsync(new LightCommand { Alert = Alert.Multiple },
-                        groups[groupId].Lights);
-
-                Console.Write("Identify another group? (Y/N) ");
-                continueIdentify = Console.ReadKey();
-                Console.WriteLine();
-
-                await _hueClient.SendCommandAsync(new LightCommand { Alert = Alert.None },
+            if (!groups.ContainsKey(groupId))
+                Console.WriteLine("Invalid input");
+            else
+                await _hueClient.SendCommandAsync(new LightCommand { Alert = Alert.Multiple },
                     groups[groupId].Lights);
 
-            } while (continueIdentify.Key == ConsoleKey.Y);
-        }
+            Console.Write("Identify another group? (Y/N) ");
+            continueIdentify = Console.ReadKey();
+            Console.WriteLine();
+
+            await _hueClient.SendCommandAsync(new LightCommand { Alert = Alert.None },
+                groups[groupId].Lights);
+
+        } while (continueIdentify.Key == ConsoleKey.Y);
     }
 }

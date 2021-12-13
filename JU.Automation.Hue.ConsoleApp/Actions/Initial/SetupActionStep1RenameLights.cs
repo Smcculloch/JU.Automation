@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -9,12 +10,15 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Initial
     public class SetupActionStep1RenameLights : SetupActionStepBase<SetupActionStep1RenameLights>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public SetupActionStep1RenameLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep1RenameLights> logger) : base(logger)
+            ILogger<SetupActionStep1RenameLights> logger,
+            ISettingsProvider settingsProvider) : base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 1;

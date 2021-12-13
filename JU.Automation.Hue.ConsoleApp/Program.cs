@@ -40,19 +40,9 @@ namespace JU.Automation.Hue.ConsoleApp
                                            .Build();
 
                        services.AddSingleton<IConfiguration>(configuration);
-                       services.AddTransient<ISettingsProvider, SettingsProvider>();
+                       services.AddSingleton<ISettingsProvider, SettingsProvider>();
 
-                       services.AddHttpClient<IHueClient, HueClient>((httpClient, serviceLocator) =>
-                       {
-                           var settingsProvider = serviceLocator.GetService<ISettingsProvider>();
-
-                           var hueClient = new HueClient(settingsProvider, httpClient);
-
-                           if (!string.IsNullOrEmpty(settingsProvider.AppKey))
-                               hueClient.Initialize(settingsProvider.AppKey);
-
-                           return hueClient;
-                       });
+                       services.AddHttpClient<IHueClient, HueClient>();
 
                        services.AddTransient<IBridgeLocator, HttpBridgeLocator>();
 

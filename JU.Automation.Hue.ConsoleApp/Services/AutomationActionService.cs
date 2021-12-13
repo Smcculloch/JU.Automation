@@ -7,6 +7,7 @@ using JU.Automation.Hue.ConsoleApp.Automations.AllOff;
 using JU.Automation.Hue.ConsoleApp.Automations.Bedtime;
 using JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
@@ -25,6 +26,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
     public class AutomationActionService: IAutomationActionService
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
         private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _wakeupAutomationSetupActions;
         private readonly IEnumerable<IAutomationSetupAction<SunriseModel>> _sunriseAutomationSetupActions;
         private readonly IEnumerable<IAutomationSetupAction<BedtimeModel>> _bedtimeAutomationSetupActions;
@@ -32,12 +34,14 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
         public AutomationActionService(
             IHueClient hueClient,
+            ISettingsProvider settingsProvider,
             IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions,
             IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions,
             IEnumerable<IBedtimeAutomationSetupAction<BedtimeModel>> bedtimeAutomationSetupActions,
             IEnumerable<IAllOffAutomationSetupAction<SwitchModel>> allOffAutomationSetupActions)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
 
             _wakeupAutomationSetupActions = wakeupAutomationSetupActions.Cast<IStep>()
                                                                         .OrderBy(actionStep => actionStep.Step)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi;
 using Q42.HueApi.Interfaces;
@@ -13,12 +14,15 @@ namespace JU.Automation.Hue.ConsoleApp.Actions.Initial
     public class SetupActionStep2GroupLights : SetupActionStepBase<SetupActionStep2GroupLights>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public SetupActionStep2GroupLights(
             IHueClient hueClient,
-            ILogger<SetupActionStep2GroupLights> logger) : base(logger)
+            ILogger<SetupActionStep2GroupLights> logger,
+            ISettingsProvider settingsProvider) : base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 2;

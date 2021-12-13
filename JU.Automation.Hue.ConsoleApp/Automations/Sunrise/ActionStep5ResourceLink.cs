@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
@@ -9,12 +10,15 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
     public class ActionStep5ResourceLink : ActionStepBase<ActionStep5ResourceLink, SunriseModel>
     {
         private readonly IHueClient _hueClient;
+        private readonly ISettingsProvider _settingsProvider;
 
         public ActionStep5ResourceLink(
             IHueClient hueClient,
-            ILogger<ActionStep5ResourceLink> logger): base(logger)
+            ILogger<ActionStep5ResourceLink> logger,
+            ISettingsProvider settingsProvider): base(logger)
         {
             _hueClient = hueClient;
+            _settingsProvider = settingsProvider;
         }
 
         public override int Step => 5;
