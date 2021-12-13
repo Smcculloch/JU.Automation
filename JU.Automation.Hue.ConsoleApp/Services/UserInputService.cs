@@ -6,7 +6,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 {
     public interface IUserInputService
     {
-        RecurringDay PromptSchedule();
+        RecurringDay PromptWakeupSchedule();
         TimeSpan PromptWakeupTime();
         TimeSpan PromptDepartureTime();
         TimeSpan PromptBedtime();
@@ -14,7 +14,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
     public class UserInputService : IUserInputService
     {
-        public RecurringDay PromptSchedule()
+        public RecurringDay PromptWakeupSchedule()
         {
             string recurringDayInput = null;
             var recurringDay = RecurringDay.RecurringNone;

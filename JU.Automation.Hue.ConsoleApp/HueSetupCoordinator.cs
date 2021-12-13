@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Services;
+using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp
 {
@@ -88,14 +89,14 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task CreateAutomationsAsync()
         {
-            var recurringDay = _userInputService.PromptSchedule();
+            var recurringDay = _userInputService.PromptWakeupSchedule();
             var wakeupTime = _userInputService.PromptWakeupTime();
             var departureTime = _userInputService.PromptDepartureTime();
             var bedtime = _userInputService.PromptBedtime();
 
             await _automationActionService.Wakeup(Constants.Groups.Bedroom, recurringDay, wakeupTime);
             await _automationActionService.Sunrise(Constants.Groups.Kitchen, recurringDay, wakeupTime, departureTime);
-            await _automationActionService.Bedtime(Constants.Groups.LivingRoom, recurringDay, bedtime);
+            await _automationActionService.Bedtime(Constants.Groups.LivingRoom, RecurringDay.RecurringAlldays, bedtime);
         }
 
         public async Task FullResetAsync() => await _resetActionService.FullReset();
