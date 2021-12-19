@@ -2,7 +2,7 @@
   "profiles": {
     "JU.Automation.Hue.ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "--hue-ip=192.168.0.21 --hue-appkey=YGstwigZk0JQNerKD31aJyhevRzcCBNQeEUWsL46",
+      "commandLineArgs": "--hue-ip=192.168.1.125 --hue-appkey=QuwcWl4VhpAgkdk2Pb7aTCpA4FaEs2MezqTjqtnJ",
       "sqlDebugging": true
     }
   }

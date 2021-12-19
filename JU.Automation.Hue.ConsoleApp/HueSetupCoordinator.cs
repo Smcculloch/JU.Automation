@@ -54,10 +54,10 @@ namespace JU.Automation.Hue.ConsoleApp
 
             if (!result.Success)
             {
-                Console.WriteLine($"Error(s) when searching for new lights:");
+                Console.WriteLine("Error(s) when searching for new lights:");
                 foreach (var error in result.Errors)
                     Console.WriteLine(error);
-                Console.WriteLine($"Resolve errors and re-run setup to continue");
+                Console.WriteLine("Resolve errors and re-run setup to continue");
                 return;
             }
 
@@ -73,10 +73,10 @@ namespace JU.Automation.Hue.ConsoleApp
 
             if (!result.Success)
             {
-                Console.WriteLine($"Error(s) when searching for new lights:");
+                Console.WriteLine("Error(s) when searching for new lights:");
                 foreach (var error in result.Errors)
                     Console.WriteLine(error);
-                Console.WriteLine($"Resolve errors and re-run setup to continue");
+                Console.WriteLine("Resolve errors and re-run setup to continue");
 
                 return;
             }
@@ -89,13 +89,30 @@ namespace JU.Automation.Hue.ConsoleApp
 
         public async Task CreateAutomationsAsync()
         {
-            var recurringDay = _userInputService.PromptWakeupSchedule();
-            var wakeupTime = _userInputService.PromptWakeupTime();
-            var departureTime = _userInputService.PromptDepartureTime();
+            var iteration = 0;
+            ConsoleKeyInfo keepScanning;
+
+            do
+            {
+                iteration++;
+
+                var recurringDay = _userInputService.PromptMorningSchedule();
+                var wakeupTime = _userInputService.PromptWakeupTime();
+                var departureTime = _userInputService.PromptDepartureTime();
+
+                await _automationActionService.Wakeup(iteration, Constants.Groups.Bedroom, recurringDay, wakeupTime);
+
+                await _automationActionService.Sunrise(iteration, Constants.Groups.Kitchen, recurringDay, wakeupTime,
+                    departureTime);
+
+                Console.Write("Add another morning routine? (Y/N) ");
+                keepScanning = Console.ReadKey();
+                Console.WriteLine();
+
+            } while (keepScanning.Key == ConsoleKey.Y);
+
             var bedtime = _userInputService.PromptBedtime();
 
-            await _automationActionService.Wakeup(Constants.Groups.Bedroom, recurringDay, wakeupTime);
-            await _automationActionService.Sunrise(Constants.Groups.Kitchen, recurringDay, wakeupTime, departureTime);
             await _automationActionService.Bedtime(Constants.Groups.LivingRoom, RecurringDay.RecurringAlldays, bedtime);
         }
 
@@ -109,10 +126,10 @@ namespace JU.Automation.Hue.ConsoleApp
 
             if (!result.Success)
             {
-                Console.WriteLine($"Error(s) when searching for new sensors:");
+                Console.WriteLine("Error(s) when searching for new sensors:");
                 foreach (var error in result.Errors)
                     Console.WriteLine(error);
-                Console.WriteLine($"Resolve errors and re-run setup to continue");
+                Console.WriteLine("Resolve errors and re-run setup to continue");
                 return;
             }
 

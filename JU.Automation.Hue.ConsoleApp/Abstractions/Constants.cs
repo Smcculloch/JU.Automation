@@ -11,6 +11,31 @@
             public const string LivingRoom = "LivingRoom";
         }
 
+        public class Automation
+        {
+            public const string Wakeup = "Wakeup";
+            public const string Sunrise = "Sunrise";
+            public const string Bedtime = "Bedtime";
+        }
+
+        public class Entity
+        {
+            public const string Sensor = "Sensor";
+            public const string Scene = "Scene";
+            public const string Schedule = "Schedule";
+            public const string Rule = "Rule";
+            public const string ResourceLink = "ResourceLink";
+        }
+
+        public class Stage
+        {
+            public const string Init = "Init";
+            public const string Start = "Start";
+            public const string TransitionUp = "TransitionUp";
+            public const string TransitionDown = "TransitionDown";
+            public const string TurnOff = "TurnOff";
+        }
+
         public class Switches
         {
             public const string AllOff = "AllOffDimmerSwitch";
@@ -25,15 +50,6 @@
 
         public class Scenes
         {
-            public const string WakeupInit = "WakeupInit";
-            public const string WakeupTransitionUp = "WakeupTransitionUp";
-            public const string WakeupTransitionDown = "WakeupTransitionDown";
-            public const string WakeupTurnOff = "WakeupTurnOff";
-
-            public const string SunriseInit = "SunriseInit";
-            public const string SunriseTransitionUp = "SunriseTransitionUp";
-            public const string SunriseTurnOff = "SunriseTurnOff";
-
             public const string BedtimeInit = "BedtimeInit";
             public const string BedtimeTransitionUp = "BedtimeTransitionUp";
             public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
@@ -45,15 +61,6 @@
 
         public class Schedules
         {
-            public const string WakeupStart = "WakeupStart";
-            public const string WakeupTransitionUp = "WakeupTransitionUp";
-            public const string WakeupTransitionDown = "WakeupTransitionDown";
-            public const string WakeupTurnOff = "WakeupTurnOff";
-
-            public const string SunriseStart = "SunriseStart";
-            public const string SunriseTransitionUp = "SunriseTransitionUp";
-            public const string SunriseTurnOff = "SunriseTurnOff";
-
             public const string BedtimeStart = "BedtimeStart";
             public const string BedtimeTransitionUp = "BedtimeTransitionUp";
             public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
@@ -63,13 +70,6 @@
 
         public class Rules
         {
-            public const string WakeupTrigger = "WakeupTrigger";
-            public const string WakeupTransitionDown = "WakeupTranstitionDown";
-            public const string WakeupTurnOff = "WakeupTurnOff";
-
-            public const string SunriseTrigger = "SunriseTrigger";
-            public const string SunriseTurnOff = "SunriseTurnOff";
-
             public const string BedtimeTrigger = "BedtimeTrigger";
             public const string BedtimeTransitionDown1 = "BedtimeTransitionDown1";
             public const string BedtimeTransitionDown2 = "BedtimeTransitionDown2";

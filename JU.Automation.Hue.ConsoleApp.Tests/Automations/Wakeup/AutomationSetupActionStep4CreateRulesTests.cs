@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
+using JU.Automation.Hue.ConsoleApp.Abstractions;
 using JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
 using JU.Automation.Hue.ConsoleApp.Providers;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,7 @@ namespace JU.Automation.Hue.ConsoleApp.Tests.Automations.Wakeup
 
             var result = await _target.ExecuteStep(new WakeupModel
             {
+                Index = 1,
                 RecurringDay = RecurringDay.RecurringAlldays,
                 WakeupTime = TimeSpan.ParseExact("0615", "hhmm", null, TimeSpanStyles.None),
                 Group = new Group(),

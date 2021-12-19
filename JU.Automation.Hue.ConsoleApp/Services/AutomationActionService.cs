@@ -13,192 +13,199 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Groups;
 
-namespace JU.Automation.Hue.ConsoleApp.Services
-{
-    public interface IAutomationActionService
+namespace JU.Automation.Hue.ConsoleApp.Services;
+
+public interface IAutomationActionService
     {
-        Task<bool> Wakeup(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime);
-        Task<bool> Sunrise(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime, TimeSpan departureTime);
+        Task<bool> Wakeup(int index, string groupName, RecurringDay recurringDay, TimeSpan wakeupTime);
+        Task<bool> Sunrise(int index, string groupName, RecurringDay recurringDay, TimeSpan wakeupTime, TimeSpan departureTime);
         Task<bool> Bedtime(string groupName, RecurringDay recurringDay, TimeSpan bedtime);
         Task<bool> AllOff();
     }
 
-    public class AutomationActionService: IAutomationActionService
+public class AutomationActionService : IAutomationActionService
+{
+    private readonly IHueClient _hueClient;
+    private readonly ISettingsProvider _settingsProvider;
+    private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _wakeupAutomationSetupActions;
+    private readonly IEnumerable<IAutomationSetupAction<SunriseModel>> _sunriseAutomationSetupActions;
+    private readonly IEnumerable<IAutomationSetupAction<BedtimeModel>> _bedtimeAutomationSetupActions;
+    private readonly IEnumerable<IAutomationSetupAction<SwitchModel>> _allOffAutomationSetupActions;
+
+    public AutomationActionService(
+        IHueClient hueClient,
+        ISettingsProvider settingsProvider,
+        IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions,
+        IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions,
+        IEnumerable<IBedtimeAutomationSetupAction<BedtimeModel>> bedtimeAutomationSetupActions,
+        IEnumerable<IAllOffAutomationSetupAction<SwitchModel>> allOffAutomationSetupActions)
     {
-        private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
-        private readonly IEnumerable<IAutomationSetupAction<WakeupModel>> _wakeupAutomationSetupActions;
-        private readonly IEnumerable<IAutomationSetupAction<SunriseModel>> _sunriseAutomationSetupActions;
-        private readonly IEnumerable<IAutomationSetupAction<BedtimeModel>> _bedtimeAutomationSetupActions;
-        private readonly IEnumerable<IAutomationSetupAction<SwitchModel>> _allOffAutomationSetupActions;
+        _hueClient = hueClient;
+        _settingsProvider = settingsProvider;
 
-        public AutomationActionService(
-            IHueClient hueClient,
-            ISettingsProvider settingsProvider,
-            IEnumerable<IWakeupAutomationSetupAction<WakeupModel>> wakeupAutomationSetupActions,
-            IEnumerable<ISunriseAutomationSetupAction<SunriseModel>> sunriseAutomationSetupActions,
-            IEnumerable<IBedtimeAutomationSetupAction<BedtimeModel>> bedtimeAutomationSetupActions,
-            IEnumerable<IAllOffAutomationSetupAction<SwitchModel>> allOffAutomationSetupActions)
+        _wakeupAutomationSetupActions = wakeupAutomationSetupActions.Cast<IStep>()
+                                                                    .OrderBy(actionStep => actionStep.Step)
+                                                                    .Cast<IAutomationSetupAction<WakeupModel>>();
+
+        _sunriseAutomationSetupActions = sunriseAutomationSetupActions.Cast<IStep>()
+                                                                      .OrderBy(actionStep => actionStep.Step)
+                                                                      .Cast<IAutomationSetupAction<SunriseModel>>();
+
+        _bedtimeAutomationSetupActions = bedtimeAutomationSetupActions.Cast<IStep>()
+                                                                      .OrderBy(actionStep => actionStep.Step)
+                                                                      .Cast<IAutomationSetupAction<BedtimeModel>>();
+
+        _allOffAutomationSetupActions = allOffAutomationSetupActions.Cast<IStep>()
+                                                                    .OrderBy(actionStep => actionStep.Step)
+                                                                    .Cast<IAutomationSetupAction<SwitchModel>>();
+    }
+
+    public async Task<bool> Wakeup(int index, string groupName, RecurringDay recurringDay, TimeSpan wakeupTime)
+    {
+        var group = await GetGroup(groupName);
+        var lights = await GetLights(group.Lights);
+
+        var model = new WakeupModel
         {
-            _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
+            Index = index,
+            RecurringDay = recurringDay,
+            WakeupTime = wakeupTime,
+            Group = group,
+            Lights = lights
+        };
 
-            _wakeupAutomationSetupActions = wakeupAutomationSetupActions.Cast<IStep>()
-                                                                        .OrderBy(actionStep => actionStep.Step)
-                                                                        .Cast<IAutomationSetupAction<WakeupModel>>();
-
-            _sunriseAutomationSetupActions = sunriseAutomationSetupActions.Cast<IStep>()
-                                                                          .OrderBy(actionStep => actionStep.Step)
-                                                                          .Cast<IAutomationSetupAction<SunriseModel>>();
-
-            _bedtimeAutomationSetupActions = bedtimeAutomationSetupActions.Cast<IStep>()
-                                                                          .OrderBy(actionStep => actionStep.Step)
-                                                                          .Cast<IAutomationSetupAction<BedtimeModel>>();
-
-            _allOffAutomationSetupActions = allOffAutomationSetupActions.Cast<IStep>()
-                                                                        .OrderBy(actionStep => actionStep.Step)
-                                                                        .Cast<IAutomationSetupAction<SwitchModel>>();
-        }
-
-        public async Task<bool> Wakeup(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime)
+        try
         {
-            var group = await GetGroup(groupName);
-            var lights = await GetLights(group.Lights);
-
-            var model = new WakeupModel
-            {
-                RecurringDay = recurringDay,
-                WakeupTime = wakeupTime,
-                Group = group,
-                Lights = lights
-            };
-
-            try
-            {
-                foreach (var action in _wakeupAutomationSetupActions)
-                {
-                    model = await action.Execute(model);
-
-                    if (model == null)
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return false;
-            }
-
-            return true;
-        }
-
-        public async Task<bool> Sunrise(string groupName, RecurringDay recurringDay, TimeSpan wakeupTime, TimeSpan departureTime)
-        {
-            var group = await GetGroup(groupName);
-            var lights = await GetLights(group.Lights);
-
-            var model = new SunriseModel
-            {
-                RecurringDay = recurringDay,
-                WakeupTime = wakeupTime,
-                DepartureTime = departureTime,
-                Group = group,
-                Lights = lights
-            };
-
-            try
-            {
-                foreach (var action in _sunriseAutomationSetupActions)
-                {
-                    model = await action.Execute(model);
-
-                    if (model == null)
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return false;
-            }
-
-            return true;
-        }
-
-        public async Task<bool> Bedtime(string groupName, RecurringDay recurringDay, TimeSpan bedtime)
-        {
-            var group = await GetGroup(groupName);
-            var lights = await GetLights(group.Lights);
-
-            var model = new BedtimeModel
-            {
-                RecurringDay = recurringDay,
-                BedtimeTime = bedtime,
-                Group = group,
-                Lights = lights
-            };
-
-            try
-            {
-                foreach (var action in _bedtimeAutomationSetupActions)
-                {
-                    model = await action.Execute(model);
-
-                    if (model == null)
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return false;
-            }
-
-            return true;
-        }
-
-        public async Task<bool> AllOff()
-        {
-            var model = new SwitchModel
-            {
-                Lights = (await _hueClient.GetLightsAsync()).ToList()
-            };
-
-            var allSensors = await _hueClient.GetSensorsAsync();
-
-            model.VirtualSensors.Wakeup = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Wakeup);
-            model.VirtualSensors.Sunrise = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Sunrise);
-            model.VirtualSensors.Bedtime = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Bedtime);
-        
-            foreach (var action in _allOffAutomationSetupActions)
+            foreach (var action in _wakeupAutomationSetupActions)
             {
                 model = await action.Execute(model);
 
                 if (model == null)
                     break;
             }
-
-            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
         }
 
-        private async Task<Group> GetGroup(string groupName)
+        return true;
+    }
+
+    public async Task<bool> Sunrise(int index, string groupName, RecurringDay recurringDay, TimeSpan wakeupTime,
+        TimeSpan departureTime)
+    {
+        var group = await GetGroup(groupName);
+        var lights = await GetLights(group.Lights);
+
+        var model = new SunriseModel
         {
-            var groups = await _hueClient.GetGroupsAsync();
+            Index = index,
+            RecurringDay = recurringDay,
+            WakeupTime = wakeupTime,
+            DepartureTime = departureTime,
+            Group = group,
+            Lights = lights
+        };
 
-            return groups.SingleOrDefault(g => g.Name == groupName);
-        }
-
-        private async Task<IList<Light>> GetLights(IList<string> lightIds)
+        try
         {
-            var lights = new List<Light>(lightIds.Count);
-
-            foreach (var lightId in lightIds)
+            foreach (var action in _sunriseAutomationSetupActions)
             {
-                var light = await _hueClient.GetLightAsync(lightId);
-                lights.Add(light);
-            }
+                model = await action.Execute(model);
 
-            return lights;
+                if (model == null)
+                    break;
+            }
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task<bool> Bedtime(string groupName, RecurringDay recurringDay, TimeSpan bedtime)
+    {
+        var group = await GetGroup(groupName);
+        var lights = await GetLights(group.Lights);
+
+        var model = new BedtimeModel
+        {
+            Index = 0,
+            RecurringDay = recurringDay,
+            BedtimeTime = bedtime,
+            Group = group,
+            Lights = lights
+        };
+
+        try
+        {
+            foreach (var action in _bedtimeAutomationSetupActions)
+            {
+                model = await action.Execute(model);
+
+                if (model == null)
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+
+        return true;
+    }
+
+    public async Task<bool> AllOff()
+    {
+        var model = new SwitchModel
+        {
+            Lights = (await _hueClient.GetLightsAsync()).ToList()
+        };
+
+        var allSensors = await _hueClient.GetSensorsAsync();
+
+        model.Sensors.Wakeup = allSensors.Where(sensor => sensor.Name.StartsWith(Constants.VirtualSensors.Wakeup))
+                                         .ToArray();
+
+        model.Sensors.Sunrise = allSensors.Where(sensor => sensor.Name.StartsWith(Constants.VirtualSensors.Sunrise))
+                                          .ToArray();
+
+        model.Sensors.Bedtime = allSensors.SingleOrDefault(sensor => sensor.Name == Constants.VirtualSensors.Bedtime);
+
+        foreach (var action in _allOffAutomationSetupActions)
+        {
+            model = await action.Execute(model);
+
+            if (model == null)
+                break;
+        }
+
+        return true;
+    }
+
+    private async Task<Group> GetGroup(string groupName)
+    {
+        var groups = await _hueClient.GetGroupsAsync();
+
+        return groups.SingleOrDefault(g => g.Name == groupName);
+    }
+
+    private async Task<IList<Light>> GetLights(IList<string> lightIds)
+    {
+        var lights = new List<Light>(lightIds.Count);
+
+        foreach (var lightId in lightIds)
+        {
+            var light = await _hueClient.GetLightAsync(lightId);
+            lights.Add(light);
+        }
+
+        return lights;
     }
 }

@@ -8,195 +8,199 @@ using Q42.HueApi;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
+namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup;
+
+public class ActionStep3CreateSchedules : ActionStepBase<ActionStep3CreateSchedules, WakeupModel>
 {
-    public class ActionStep3CreateSchedules : ActionStepBase<ActionStep3CreateSchedules, WakeupModel>
+    private readonly IHueClient _hueClient;
+    private readonly ISettingsProvider _settingsProvider;
+
+    public ActionStep3CreateSchedules(
+        IHueClient hueClient,
+        ILogger<ActionStep3CreateSchedules> logger,
+        ISettingsProvider settingsProvider) : base(logger)
     {
-        private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
+        _hueClient = hueClient;
+        _settingsProvider = settingsProvider;
+    }
 
-        public ActionStep3CreateSchedules(
-            IHueClient hueClient,
-            ILogger<ActionStep3CreateSchedules> logger,
-            ISettingsProvider settingsProvider): base(logger)
+    public override int Step => 3;
+
+    public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
+    {
+        if (model.Index == 0)
+            throw new ArgumentException($"{nameof(model.Index)} must be greater than zero");
+
+        if (model.RecurringDay == default)
+            throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
+        if (model.WakeupTime == TimeSpan.Zero)
+            throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+
+        if (model.Group == null)
+            throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
+
+        if (model.Lights == null)
+            throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
+
+        if (model.TriggerSensor == null)
+            throw new ArgumentNullException($"{nameof(model.TriggerSensor)} cannot be null");
+
+        if (model.Scenes?.Init == null || model.Scenes?.TransitionUp == null ||
+            model.Scenes?.TransitionDown == null || model.Scenes?.TurnOff == null)
+            throw new ArgumentNullException($"One or more scenes are null");
+
+        model.Schedules.Start = await CreateStartSchedule(model.Index, model.TriggerSensor, model.RecurringDay, model.WakeupTime);
+        model.Schedules.TransitionUp = await CreateTransitionUpSchedule(model.Index, model.Scenes.TransitionUp);
+        model.Schedules.TransitionDown = await CreateTransitionDownSchedule(model.Index, model.Scenes.TransitionDown);
+        model.Schedules.TurnOff = await CreateTurnOffSchedule(model.Index, model.Scenes.TurnOff);
+
+        return model;
+    }
+
+    private async Task<Schedule> CreateStartSchedule(int index, Sensor triggerSensor, RecurringDay recurringDay,
+        TimeSpan wakeupTime)
+    {
+        var startTime = wakeupTime.Subtract(TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionUpInMinutes));
+
+        var wakeupTriggerSchedule = new Schedule
         {
-            _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
-        }
-
-        public override int Step => 3;
-
-        public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
-        {
-            if (model.RecurringDay == default)
-                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
-
-            if (model.WakeupTime == TimeSpan.Zero)
-                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
-
-            if (model.Group == null)
-                throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
-
-            if (model.Lights == null)
-                throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
-
-            if (model.TriggerSensor == null)
-                throw new ArgumentNullException($"{nameof(model.TriggerSensor)} cannot be null");
-
-            if (model.Scenes?.Init == null || model.Scenes?.TransitionUp == null ||
-                model.Scenes?.TransitionDown == null || model.Scenes?.TurnOff == null)
-                throw new ArgumentNullException($"One or more scenes are null");
-
-            model.Schedules.Start = await CreateStartSchedule(model.TriggerSensor, model.RecurringDay, model.WakeupTime);
-            model.Schedules.TransitionUp = await CreateTransitionUpSchedule(model.Scenes.TransitionUp);
-            model.Schedules.TransitionDown = await CreateTransitionDownSchedule(model.Scenes.TransitionDown);
-            model.Schedules.TurnOff = await CreateTurnOffSchedule(model.Scenes.TurnOff);
-
-            return model;
-        }
-
-        private async Task<Schedule> CreateStartSchedule(Sensor triggerSensor, RecurringDay recurringDay, TimeSpan wakeupTime)
-        {
-            var startTime = wakeupTime.Subtract(TimeSpan.FromMinutes(_settingsProvider.WakeupTransitionUpInMinutes));
-
-            var wakeupTriggerSchedule = new Schedule
+            Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Schedule}{Constants.Stage.Start}",
+            Command = new InternalBridgeCommand
             {
-                Name = Constants.Schedules.WakeupStart,
-                Command = new InternalBridgeCommand
+                Address = $"/api/{_settingsProvider.AppKey}/sensors/{triggerSensor.Id}/state",
+                Body = new SensorState
                 {
-                    Address = $"/api/{_settingsProvider.AppKey}/sensors/{triggerSensor.Id}/state",
-                    Body = new SensorState
-                    {
-                        Flag = true
-                    },
-                    Method = HttpMethod.Put
+                    Flag = true
                 },
-                LocalTime = new HueDateTime
-                {
-                    RecurringDay = recurringDay,
-                    TimerTime = startTime
-                },
-                //Status = ScheduleStatus.Enabled
-            };
-
-            string wakeupTriggerScheduleId;
-
-            try
+                Method = HttpMethod.Put
+            },
+            LocalTime = new HueDateTime
             {
-                wakeupTriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeupTriggerSchedule);
+                RecurringDay = recurringDay,
+                TimerTime = startTime
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+        };
 
-            wakeupTriggerSchedule.AutoDelete = false;
+        string wakeupTriggerScheduleId;
 
-            await _hueClient.UpdateScheduleAsync(wakeupTriggerScheduleId, wakeupTriggerSchedule);
-
-            Console.WriteLine($"Schedule ({wakeupTriggerSchedule.Name}) with id {wakeupTriggerScheduleId} created");
-
-            return await _hueClient.GetScheduleAsync(wakeupTriggerScheduleId);
-        }
-
-        private async Task<Schedule> CreateTransitionUpSchedule(Scene transitionUpScene)
+        try
         {
-            var wakeupTransitionUpSchedule = new Schedule
-            {
-                Name = Constants.Schedules.WakeupTransitionUp,
-                Command = new InternalBridgeCommand
-                {
-                    Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
-                    Body = new SceneCommand
-                    {
-                        Scene = transitionUpScene.Id
-                    },
-                    Method = HttpMethod.Put
-                },
-                LocalTime = new HueDateTime
-                {
-                    TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
-                },
-                AutoDelete = false,
-                Status = ScheduleStatus.Disabled
-            };
-
-            var wakeupTransitionUpScheduleId = await _hueClient.CreateScheduleAsync(wakeupTransitionUpSchedule);
-
-            wakeupTransitionUpSchedule.AutoDelete = false;
-
-            await _hueClient.UpdateScheduleAsync(wakeupTransitionUpScheduleId, wakeupTransitionUpSchedule);
-
-            Console.WriteLine($"Schedule ({wakeupTransitionUpSchedule.Name}) with id {wakeupTransitionUpScheduleId} created");
-
-            return await _hueClient.GetScheduleAsync(wakeupTransitionUpScheduleId);
+            wakeupTriggerScheduleId = await _hueClient.CreateScheduleAsync(wakeupTriggerSchedule);
         }
-
-        private async Task<Schedule> CreateTransitionDownSchedule(Scene transitionDownScene)
+        catch (Exception e)
         {
-            var wakeupTransitionDownSchedule = new Schedule
-            {
-                Name = Constants.Schedules.WakeupTransitionDown,
-                Command = new InternalBridgeCommand
-                {
-                    Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
-                    Body = new SceneCommand
-                    {
-                        Scene = transitionDownScene.Id
-                    },
-                    Method = HttpMethod.Put
-                },
-                LocalTime = new HueDateTime
-                {
-                    TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
-                },
-                AutoDelete = false,
-                Status = ScheduleStatus.Disabled
-            };
-
-            var wakeupTransitionDownScheduleId = await _hueClient.CreateScheduleAsync(wakeupTransitionDownSchedule);
-
-            wakeupTransitionDownSchedule.AutoDelete = false;
-
-            await _hueClient.UpdateScheduleAsync(wakeupTransitionDownScheduleId, wakeupTransitionDownSchedule);
-
-            Console.WriteLine($"Schedule ({wakeupTransitionDownSchedule.Name}) with id {wakeupTransitionDownScheduleId} created");
-
-            return await _hueClient.GetScheduleAsync(wakeupTransitionDownScheduleId);
+            Console.WriteLine(e);
+            throw;
         }
 
-        private async Task<Schedule> CreateTurnOffSchedule(Scene turnOffScene)
+        wakeupTriggerSchedule.AutoDelete = false;
+
+        await _hueClient.UpdateScheduleAsync(wakeupTriggerScheduleId, wakeupTriggerSchedule);
+
+        Console.WriteLine($"Schedule ({wakeupTriggerSchedule.Name}) with id {wakeupTriggerScheduleId} created");
+
+        return await _hueClient.GetScheduleAsync(wakeupTriggerScheduleId);
+    }
+
+    private async Task<Schedule> CreateTransitionUpSchedule(int index, Scene transitionUpScene)
+    {
+        var wakeupTransitionUpSchedule = new Schedule
         {
-            var wakeupTurnOffSchedule = new Schedule
+            Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Schedule}{Constants.Stage.TransitionUp}",
+            Command = new InternalBridgeCommand
             {
-                Name = Constants.Schedules.WakeupTurnOff,
-                Command = new InternalBridgeCommand
+                Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
+                Body = new SceneCommand
                 {
-                    Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
-                    Body = new SceneCommand
-                    {
-                        Scene = turnOffScene.Id
-                    },
-                    Method = HttpMethod.Put
+                    Scene = transitionUpScene.Id
                 },
-                LocalTime = new HueDateTime
+                Method = HttpMethod.Put
+            },
+            LocalTime = new HueDateTime
+            {
+                TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
+            },
+            AutoDelete = false,
+            Status = ScheduleStatus.Disabled
+        };
+
+        var wakeupTransitionUpScheduleId = await _hueClient.CreateScheduleAsync(wakeupTransitionUpSchedule);
+
+        wakeupTransitionUpSchedule.AutoDelete = false;
+
+        await _hueClient.UpdateScheduleAsync(wakeupTransitionUpScheduleId, wakeupTransitionUpSchedule);
+
+        Console.WriteLine(
+            $"Schedule ({wakeupTransitionUpSchedule.Name}) with id {wakeupTransitionUpScheduleId} created");
+
+        return await _hueClient.GetScheduleAsync(wakeupTransitionUpScheduleId);
+    }
+
+    private async Task<Schedule> CreateTransitionDownSchedule(int index, Scene transitionDownScene)
+    {
+        var wakeupTransitionDownSchedule = new Schedule
+        {
+            Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Schedule}{Constants.Stage.TransitionDown}",
+            Command = new InternalBridgeCommand
+            {
+                Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
+                Body = new SceneCommand
                 {
-                    TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
+                    Scene = transitionDownScene.Id
                 },
-                AutoDelete = false,
-                Status = ScheduleStatus.Disabled
-            };
+                Method = HttpMethod.Put
+            },
+            LocalTime = new HueDateTime
+            {
+                TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
+            },
+            AutoDelete = false,
+            Status = ScheduleStatus.Disabled
+        };
 
-            var wakeupTurnOffScheduleId = await _hueClient.CreateScheduleAsync(wakeupTurnOffSchedule);
+        var wakeupTransitionDownScheduleId = await _hueClient.CreateScheduleAsync(wakeupTransitionDownSchedule);
 
-            wakeupTurnOffSchedule.AutoDelete = false;
+        wakeupTransitionDownSchedule.AutoDelete = false;
 
-            await _hueClient.UpdateScheduleAsync(wakeupTurnOffScheduleId, wakeupTurnOffSchedule);
+        await _hueClient.UpdateScheduleAsync(wakeupTransitionDownScheduleId, wakeupTransitionDownSchedule);
 
-            Console.WriteLine($"Schedule ({wakeupTurnOffSchedule.Name}) with id {wakeupTurnOffScheduleId} created");
+        Console.WriteLine(
+            $"Schedule ({wakeupTransitionDownSchedule.Name}) with id {wakeupTransitionDownScheduleId} created");
 
-            return await _hueClient.GetScheduleAsync(wakeupTurnOffScheduleId);
-        }
+        return await _hueClient.GetScheduleAsync(wakeupTransitionDownScheduleId);
+    }
+
+    private async Task<Schedule> CreateTurnOffSchedule(int index, Scene turnOffScene)
+    {
+        var wakeupTurnOffSchedule = new Schedule
+        {
+            Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Schedule}{Constants.Stage.TurnOff}",
+            Command = new InternalBridgeCommand
+            {
+                Address = $"/api/{_settingsProvider.AppKey}/groups/0/action",
+                Body = new SceneCommand
+                {
+                    Scene = turnOffScene.Id
+                },
+                Method = HttpMethod.Put
+            },
+            LocalTime = new HueDateTime
+            {
+                TimerTime = TimeSpan.FromSeconds(Constants.ScheduleDeactivateDelayInSeconds)
+            },
+            AutoDelete = false,
+            Status = ScheduleStatus.Disabled
+        };
+
+        var wakeupTurnOffScheduleId = await _hueClient.CreateScheduleAsync(wakeupTurnOffSchedule);
+
+        wakeupTurnOffSchedule.AutoDelete = false;
+
+        await _hueClient.UpdateScheduleAsync(wakeupTurnOffScheduleId, wakeupTurnOffSchedule);
+
+        Console.WriteLine($"Schedule ({wakeupTurnOffSchedule.Name}) with id {wakeupTurnOffScheduleId} created");
+
+        return await _hueClient.GetScheduleAsync(wakeupTurnOffScheduleId);
     }
 }

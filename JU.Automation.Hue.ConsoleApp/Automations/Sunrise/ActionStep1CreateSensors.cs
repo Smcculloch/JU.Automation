@@ -7,63 +7,65 @@ using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 using Q42.HueApi.Models.Sensors.CLIP;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise
+namespace JU.Automation.Hue.ConsoleApp.Automations.Sunrise;
+
+public class ActionStep1CreateSensors : ActionStepBase<ActionStep1CreateSensors, SunriseModel>
 {
-    public class ActionStep1CreateSensors : ActionStepBase<ActionStep1CreateSensors, SunriseModel>
+    private readonly IHueClient _hueClient;
+    private readonly ISettingsProvider _settingsProvider;
+
+    public ActionStep1CreateSensors(
+        IHueClient hueClient,
+        ILogger<ActionStep1CreateSensors> logger,
+        ISettingsProvider settingsProvider) : base(logger)
     {
-        private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
+        _hueClient = hueClient;
+        _settingsProvider = settingsProvider;
+    }
 
-        public ActionStep1CreateSensors(
-            IHueClient hueClient,
-            ILogger<ActionStep1CreateSensors> logger,
-            ISettingsProvider settingsProvider): base(logger)
+    public override int Step => 1;
+
+    public override async Task<SunriseModel> ExecuteStep(SunriseModel model)
+    {
+        if (model.Index == 0)
+            throw new ArgumentException($"{nameof(model.Index)} must be greater than zero");
+
+        if (model.RecurringDay == default)
+            throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
+
+        if (model.WakeupTime == TimeSpan.Zero)
+            throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
+
+        if (model.DepartureTime == TimeSpan.Zero)
+            throw new ArgumentException($"{nameof(model.DepartureTime)} is invalid");
+
+        if (model.Group == null)
+            throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
+
+        if (model.Lights == null)
+            throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
+
+        var sunriseSensor = new Sensor
         {
-            _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
-        }
-
-        public override int Step => 1;
-
-        public override async Task<SunriseModel> ExecuteStep(SunriseModel model)
-        {
-            if (model.RecurringDay == default)
-                throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
-
-            if (model.WakeupTime == TimeSpan.Zero)
-                throw new ArgumentException($"{nameof(model.WakeupTime)} is invalid");
-
-            if (model.DepartureTime == TimeSpan.Zero)
-                throw new ArgumentException($"{nameof(model.DepartureTime)} is invalid");
-
-            if (model.Group == null)
-                throw new ArgumentNullException($"{nameof(model.Group)} cannot be null");
-
-            if (model.Lights == null)
-                throw new ArgumentNullException($"{nameof(model.Lights)} cannot be null");
-
-            var sunriseSensor = new Sensor
+            Config = new SensorConfig
             {
-                Config = new SensorConfig
-                {
-                    On = true,
-                    Reachable = true
-                },
-                Name = Constants.VirtualSensors.Sunrise,
-                Type = nameof(CLIPGenericFlag),
-                ModelId = "SUNRISE",
-                ManufacturerName = "Philips",
-                SwVersion = "1.0",
-                UniqueId = $"{Guid.NewGuid():N}"
-            };
+                On = true,
+                Reachable = true
+            },
+            Name = $"{Constants.Automation.Sunrise}{model.Index}{Constants.Entity.Sensor}",
+            Type = nameof(CLIPGenericFlag),
+            ModelId = "SUNRISE",
+            ManufacturerName = "Philips",
+            SwVersion = "1.0",
+            UniqueId = $"{Guid.NewGuid():N}"
+        };
 
-            var sensorId = await _hueClient.CreateSensorAsync(sunriseSensor);
+        var sensorId = await _hueClient.CreateSensorAsync(sunriseSensor);
 
-            Console.WriteLine($"Sensor ({sunriseSensor.Name}) with id {sensorId} created");
+        Console.WriteLine($"Sensor ({sunriseSensor.Name}) with id {sensorId} created");
 
-            model.TriggerSensor = await _hueClient.GetSensorAsync(sensorId);
+        model.TriggerSensor = await _hueClient.GetSensorAsync(sensorId);
 
-            return model;
-        }
+        return model;
     }
 }

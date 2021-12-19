@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using JU.Automation.Hue.ConsoleApp.Extensions;
 using Q42.HueApi.Models;
 
 namespace JU.Automation.Hue.ConsoleApp.Services
 {
     public interface IUserInputService
     {
-        RecurringDay PromptWakeupSchedule();
+        RecurringDay PromptMorningSchedule();
         TimeSpan PromptWakeupTime();
         TimeSpan PromptDepartureTime();
         TimeSpan PromptBedtime();
@@ -14,7 +16,7 @@ namespace JU.Automation.Hue.ConsoleApp.Services
 
     public class UserInputService : IUserInputService
     {
-        public RecurringDay PromptWakeupSchedule()
+        public RecurringDay PromptMorningSchedule()
         {
             string recurringDayInput = null;
             var recurringDay = RecurringDay.RecurringNone;
@@ -22,20 +24,110 @@ namespace JU.Automation.Hue.ConsoleApp.Services
             do
             {
                 if (string.IsNullOrEmpty(recurringDayInput))
+                {
                     Console.Write(
-                        $"Enter desired automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W)) ");
+                        $"Enter desired automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W) | Custom (C)) ");
+                }
                 else
+                {
                     Console.Write(
-                        $"Invalid, enter valid automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W)) ");
+                        $"Invalid, enter valid automation frequency: ({RecurringDay.RecurringAlldays} (A) | {RecurringDay.RecurringWeekdays} (W) | Custom (C)) ");
+                }
 
                 recurringDayInput = Console.ReadLine();
 
-                if (recurringDayInput == "A" || recurringDayInput == "a")
+                if (recurringDayInput is "A" or "a")
                     recurringDay = RecurringDay.RecurringAlldays;
-                else if (recurringDayInput == "W" || recurringDayInput == "w")
+                else if (recurringDayInput is "W" or "w")
                     recurringDay = RecurringDay.RecurringWeekdays;
+                else if (recurringDayInput is "C" or "c")
+                    recurringDay = PromptCustomMorningSchedule();
 
             } while (recurringDay == RecurringDay.RecurringNone);
+
+            return recurringDay;
+        }
+
+        public RecurringDay PromptCustomMorningSchedule()
+        {
+            var recurringDay = RecurringDay.RecurringNone;
+
+            ConsoleKeyInfo keepScanning;
+
+            do
+            {
+                Console.WriteLine($" (1) {DayOfWeek.Sunday}");
+                Console.WriteLine($" (2) {DayOfWeek.Monday}");
+                Console.WriteLine($" (3) {DayOfWeek.Tuesday}");
+                Console.WriteLine($" (4) {DayOfWeek.Wednesday}");
+                Console.WriteLine($" (5) {DayOfWeek.Thursday}");
+                Console.WriteLine($" (6) {DayOfWeek.Friday}");
+                Console.WriteLine($" (7) {DayOfWeek.Saturday}");
+                Console.Write("Select day: ");
+
+                var value = Console.ReadLine();
+
+                if (int.TryParse(value, out var dayOfWeek) && Enum.IsDefined(typeof(DayOfWeek), dayOfWeek - 1))
+                {
+                    switch ((DayOfWeek)dayOfWeek - 1)
+                    {
+                        case DayOfWeek.Sunday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringSunday))
+                                recurringDay |= RecurringDay.RecurringSunday;
+                            else
+                                Console.WriteLine("Sunday already selected");
+                            break;
+                        case DayOfWeek.Monday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringMonday))
+                                recurringDay |= RecurringDay.RecurringMonday;
+                            else
+                                Console.WriteLine("Monday already selected");
+                            break;
+                        case DayOfWeek.Tuesday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringTuesday))
+                                recurringDay |= RecurringDay.RecurringTuesday;
+                            else
+                                Console.WriteLine("Tuesday already selected");
+                            break;
+                        case DayOfWeek.Wednesday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringWednesday))
+                                recurringDay |= RecurringDay.RecurringWednesday;
+                            else
+                                Console.WriteLine("Wednesday already selected");
+                            break;
+                        case DayOfWeek.Thursday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringThursday))
+                                recurringDay |= RecurringDay.RecurringThursday;
+                            else
+                                Console.WriteLine("Thursday already selected");
+                            break;
+                        case DayOfWeek.Friday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringFriday))
+                                recurringDay |= RecurringDay.RecurringFriday;
+                            else
+                                Console.WriteLine("Friday already selected");
+                            break;
+                        case DayOfWeek.Saturday:
+                            if (!recurringDay.HasFlag(RecurringDay.RecurringSaturday))
+                                recurringDay |= RecurringDay.RecurringSaturday;
+                            else
+                                Console.WriteLine("Saturday already selected");
+                            break;
+                    }
+
+                    var selectedDays = recurringDay.GetUniqueFlags().Select(flag => flag.ToString().Substring(9));
+                    Console.WriteLine($"Selected days: {string.Join(", ", selectedDays)}");
+                }
+                else
+                {
+                    Console.WriteLine("Invalid selection");
+                }
+
+                Console.Write("Add another day? (Y/N) ");
+                keepScanning = Console.ReadKey();
+                Console.WriteLine();
+
+            } while (keepScanning.Key == ConsoleKey.Y);
 
             return recurringDay;
         }

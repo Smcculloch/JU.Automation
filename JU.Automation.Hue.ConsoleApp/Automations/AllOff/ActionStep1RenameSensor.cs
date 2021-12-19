@@ -7,56 +7,55 @@ using Microsoft.Extensions.Logging;
 using Q42.HueApi.Interfaces;
 using Q42.HueApi.Models;
 
-namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff
+namespace JU.Automation.Hue.ConsoleApp.Automations.AllOff;
+
+public class ActionStep1RenameSensor : ActionStepBase<ActionStep1RenameSensor, SwitchModel>
 {
-    public class ActionStep1RenameSensor : ActionStepBase<ActionStep1RenameSensor, SwitchModel>
+    private readonly IHueClient _hueClient;
+    private readonly ISettingsProvider _settingsProvider;
+
+    public ActionStep1RenameSensor(
+        IHueClient hueClient,
+        ILogger<ActionStep1RenameSensor> logger,
+        ISettingsProvider settingsProvider) : base(logger)
     {
-        private readonly IHueClient _hueClient;
-        private readonly ISettingsProvider _settingsProvider;
+        _hueClient = hueClient;
+        _settingsProvider = settingsProvider;
+    }
 
-        public ActionStep1RenameSensor(
-            IHueClient hueClient,
-            ILogger<ActionStep1RenameSensor> logger,
-            ISettingsProvider settingsProvider): base(logger)
+    public override int Step => 1;
+
+    public override async Task<SwitchModel> ExecuteStep(SwitchModel model)
+    {
+        if (model.Lights == null)
+            throw new ArgumentNullException($"{model.Lights} cannot be null");
+
+        if (model.Sensors?.Wakeup == null || model.Sensors?.Sunrise == null || model.Sensors?.Bedtime == null)
+            throw new ArgumentNullException("One or more virtual sensors are null");
+
+        var newSensors = await _hueClient.GetNewSensorsAsync();
+
+        Sensor allOffSensor;
+
+        if (newSensors.Count == 1)
         {
-            _hueClient = hueClient;
-            _settingsProvider = settingsProvider;
+            allOffSensor = newSensors.FirstOrDefault();
+
+            await _hueClient.UpdateSensorAsync(allOffSensor.Id, Constants.Switches.AllOff);
+
+            allOffSensor = await _hueClient.GetSensorAsync(allOffSensor.Id);
+
+            Console.WriteLine($"Sensor ({allOffSensor.Name}) name updated");
+        }
+        else
+        {
+            var allSensors = await _hueClient.GetSensorsAsync();
+
+            allOffSensor = allSensors.FirstOrDefault(sensor => sensor.Name == Constants.Switches.AllOff);
         }
 
-        public override int Step => 1;
+        model.TriggerSensor = allOffSensor;
 
-        public override async Task<SwitchModel> ExecuteStep(SwitchModel model)
-        {
-            if (model.Lights == null)
-                throw new ArgumentNullException($"{model.Lights} cannot be null");
-
-            if (model.VirtualSensors?.Wakeup == null || model.VirtualSensors?.Sunrise == null || model.VirtualSensors?.Bedtime == null)
-                throw new ArgumentNullException($"One or more virtual sensors are null");
-
-            var newSensors = await _hueClient.GetNewSensorsAsync();
-
-            Sensor allOffSensor;
-
-            if (newSensors.Count == 1)
-            {
-                allOffSensor = newSensors.FirstOrDefault();
-
-                await _hueClient.UpdateSensorAsync(allOffSensor.Id, Constants.Switches.AllOff);
-
-                allOffSensor = await _hueClient.GetSensorAsync(allOffSensor?.Id);
-
-                Console.WriteLine($"Sensor ({allOffSensor.Name}) name updated");
-            }
-            else
-            {
-                var allSensors = await _hueClient.GetSensorsAsync();
-
-                allOffSensor = allSensors.FirstOrDefault(sensor => sensor.Name == Constants.Switches.AllOff);
-            }
-
-            model.TriggerSensor = allOffSensor;
-
-            return model;
-        }
+        return model;
     }
 }

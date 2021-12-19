@@ -31,6 +31,9 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
         public override async Task<WakeupModel> ExecuteStep(WakeupModel model)
         {
+            if (model.Index == 0)
+                throw new ArgumentException($"{nameof(model.Index)} must be greater than zero");
+
             if (model.RecurringDay == default)
                 throw new ArgumentException($"{nameof(model.RecurringDay)} is invalid");
 
@@ -54,19 +57,20 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 model.Schedules?.TransitionDown == null || model.Schedules?.TurnOff == null)
                 throw new ArgumentNullException($"One or more schedules are null");
 
-            model.Rules.Trigger = await CreateTriggerRule(model.Group, model.TriggerSensor, model.Scenes.Init,
-                model.Schedules.TransitionUp);
-            model.Rules.TransitionDown = await CreateTranstionDownRule(model.TriggerSensor, model.Schedules.TransitionDown);
-            model.Rules.TurnOff = await CreateTurnOffRule(model.TriggerSensor, model.Schedules.TurnOff);
+            model.Rules.Trigger = await CreateStartRule(model.Index, model.Group, model.TriggerSensor,
+                model.Scenes.Init, model.Schedules.TransitionUp);
+            model.Rules.TransitionDown = await CreateTranstionDownRule(model.Index, model.TriggerSensor,
+                model.Schedules.TransitionDown);
+            model.Rules.TurnOff = await CreateTurnOffRule(model.Index, model.TriggerSensor, model.Schedules.TurnOff);
 
             return model;
         }
 
-        private async Task<Rule> CreateTriggerRule(Group group, Sensor triggerSensor, Scene initScene, Schedule transitionUpSchedule)
+        private async Task<Rule> CreateStartRule(int index, Group group, Sensor triggerSensor, Scene initScene, Schedule transitionUpSchedule)
         {
-            var wakeupTriggerRule = new Rule
+            var wakeupStartRule = new Rule
             {
-                Name = Constants.Rules.WakeupTrigger,
+                Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Rule}{Constants.Stage.Start}",
                 Conditions = new List<RuleCondition>
                 {
                     new()
@@ -97,14 +101,14 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
                 }
             };
 
-            var wakeupTriggerRuleId = await _hueClient.CreateRule(wakeupTriggerRule);
+            var wakeupStartRuleId = await _hueClient.CreateRule(wakeupStartRule);
 
-            Console.WriteLine($"Rule {wakeupTriggerRule.Name} with id {wakeupTriggerRuleId} created");
+            Console.WriteLine($"Rule {wakeupStartRule.Name} with id {wakeupStartRuleId} created");
 
-            return await _hueClient.GetRuleAsync(wakeupTriggerRuleId);
+            return await _hueClient.GetRuleAsync(wakeupStartRuleId);
         }
 
-        private async Task<Rule> CreateTranstionDownRule(Sensor triggerSensor, Schedule transitionDownSchedule)
+        private async Task<Rule> CreateTranstionDownRule(int index, Sensor triggerSensor, Schedule transitionDownSchedule)
         {
             var transitionDownDelay = TimeSpan.FromMinutes(
                 _settingsProvider.WakeupTransitionUpInMinutes +
@@ -112,7 +116,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             var wakeupTransitionDownRule = new Rule
             {
-                Name = Constants.Rules.WakeupTransitionDown,
+                Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Rule}{Constants.Stage.TransitionDown}",
                 Conditions = new List<RuleCondition>
                 {
                     new()
@@ -149,7 +153,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
             return wakeupTransitionDownRule;
         }
 
-        private async Task<Rule> CreateTurnOffRule(Sensor triggerSensor, Schedule turnOffSchedule)
+        private async Task<Rule> CreateTurnOffRule(int index, Sensor triggerSensor, Schedule turnOffSchedule)
         {
             var turnOffDelay = TimeSpan.FromMinutes(
                 _settingsProvider.WakeupTransitionUpInMinutes + 
@@ -158,7 +162,7 @@ namespace JU.Automation.Hue.ConsoleApp.Automations.Wakeup
 
             var wakeupTurnOffRule = new Rule
             {
-                Name = Constants.Rules.WakeupTurnOff,
+                Name = $"{Constants.Automation.Wakeup}{index}{Constants.Entity.Rule}{Constants.Stage.TurnOff}",
                 Conditions = new List<RuleCondition>
                 {
                     new()
